@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="水墨风格图解：系数之比极限存在时，幂级数与其逐项积分、逐项求导有相同的收敛半径。">
+<title>幂级数同径图解 · 三个幂级数，一个收敛圆</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style>
+/* 布局：一轴手卷。宣纸居中单栏，自上而下：题 → 三步证明 → 两幅可拨动的墨图 → 余论 */
+:root{
+  --paper:#eeece4; --paper-2:#e4e1d6;
+  --ink-rgb:30 30 28; --indigo-rgb:52 84 110; --ochre-rgb:150 88 50; --cinnabar-rgb:178 46 36;
+  --ink:rgb(var(--ink-rgb)); --ink-soft:rgb(var(--ink-rgb) / .68); --ink-faint:rgb(var(--ink-rgb) / .18);
+  --indigo:rgb(var(--indigo-rgb)); --ochre:rgb(var(--ochre-rgb)); --cinnabar:rgb(var(--cinnabar-rgb));
+  --seal-text:#f4efe6;
+  --brush:"Ma Shan Zheng","Kaiti SC","STKaiti","KaiTi",serif;
+  --body:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#16171a; --paper-2:#1e2024;
+    --ink-rgb:226 222 210; --indigo-rgb:140 176 205; --ochre-rgb:214 150 105; --cinnabar-rgb:226 92 74;
+    --seal-text:#16171a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16171a; --paper-2:#1e2024;
+  --ink-rgb:226 222 210; --indigo-rgb:140 176 205; --ochre-rgb:214 150 105; --cinnabar-rgb:226 92 74;
+  --seal-text:#16171a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+img{max-width:100%}
+[hidden]{display:none!important}
+.back{font-size:14px; color:var(--ink-soft); margin:0; max-width:none}
+.back a{color:inherit}
+body{
+  margin:0;
+  background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:17px; line-height:1.85;
+  padding-inline:20px; padding-block:0 72px;
+}
+.scroll{max-width:720px; margin-inline:auto; display:flex; flex-direction:column; gap:44px}
+canvas{display:block; width:100%}
+
+/* 卷首 */
+.head{display:flex; flex-direction:column; gap:10px}
+#hills{height:150px}
+.title-row{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap}
+h1{font-family:var(--brush); font-weight:400; font-size:clamp(34px,7.4vw,54px); line-height:1.15; margin:0; text-wrap:balance; letter-spacing:.04em}
+.seal{font-family:var(--brush); background:var(--cinnabar); color:var(--seal-text); font-size:19px; line-height:1.05;
+  padding:6px 5px; width:1.2em; text-align:center; border-radius:3px; transform:rotate(-3deg); margin-bottom:6px; flex:none}
+.lede{color:var(--ink-soft); margin:0; max-width:34em}
+
+section{display:flex; flex-direction:column; gap:14px; min-width:0}
+h2{font-family:var(--brush); font-weight:400; font-size:30px; line-height:1.2; margin:0; letter-spacing:.06em; display:flex; align-items:baseline; gap:12px}
+h2 .no{color:var(--cinnabar); font-size:22px}
+p{margin:0; max-width:36em}
+.note{color:var(--ink-soft); font-size:15px}
+strong{font-weight:600}
+
+/* 题目：一方淡墨笺 */
+.problem{background:var(--paper-2); padding:20px 22px; border-left:3px solid var(--ink)}
+.problem p{max-width:none}
+mjx-container[display="true"]{overflow-x:auto; overflow-y:hidden; max-width:100%; margin:.6em 0 !important}
+mjx-container{color:inherit}
+
+.key{font-family:var(--brush); font-size:26px; line-height:1.5; letter-spacing:.04em; max-width:none}
+.key em{font-style:normal; color:var(--cinnabar)}
+
+/* 墨图 */
+.figure{display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--ink-faint); padding-top:16px}
+.presets{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.presets span{font-size:14px; color:var(--ink-soft)}
+.presets button{font:inherit; font-size:15px; line-height:1.4; color:var(--ink); background:transparent;
+  border:1px solid var(--ink-faint); border-radius:2px; padding:5px 14px; cursor:pointer}
+.presets button:hover{border-color:var(--ink-soft)}
+.presets button[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+button:focus-visible, input:focus-visible, canvas:focus-visible{outline:2px solid var(--cinnabar); outline-offset:3px}
+.legend{display:flex; flex-wrap:wrap; gap:6px 20px; font-size:14px; color:var(--ink-soft)}
+.legend i{display:inline-block; width:22px; height:4px; border-radius:2px; vertical-align:middle; margin-right:7px}
+.sw1{background:var(--ink)} .sw2{background:var(--indigo)} .sw3{background:var(--ochre)}
+#ratio{aspect-ratio:2/1}
+.pair{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:20px; align-items:start}
+.pair > div{display:flex; flex-direction:column; gap:8px; min-width:0}
+#plane{aspect-ratio:1/1; touch-action:none; cursor:grab}
+#terms{aspect-ratio:11/10}
+.cap{font-size:14px; color:var(--ink-soft); max-width:none}
+.slider{display:flex; align-items:center; gap:12px; font-size:15px}
+.slider input{flex:1; min-width:0; accent-color:var(--cinnabar)}
+.slider output{font-variant-numeric:tabular-nums; min-width:4.2em; text-align:right}
+.verdict{font-family:var(--brush); font-size:24px; line-height:1.4; letter-spacing:.04em; max-width:none; min-height:2.8em}
+.verdict.out{color:var(--cinnabar)}
+@media (max-width:620px){ .pair{grid-template-columns:minmax(0,1fr)} #ratio{aspect-ratio:4/3} body{font-size:16px} }
+
+.after{display:flex; flex-direction:column; gap:12px; padding-left:18px; border-left:1px solid var(--ink-faint)}
+</style>
+
+</head>
+<body>
+<div class="scroll">
+
+  <header class="head">
+    <canvas id="hills" aria-hidden="true"></canvas>
+    <div class="title-row">
+      <h1>三个幂级数，一个收敛圆</h1>
+      <div class="seal">同径</div>
+    </div>
+    <p class="lede">把一个幂级数逐项积分、逐项求导，系数上只多出一个 n+1 或 n。这样的因子在比值里化为 1，所以收敛圆纹丝不动。</p>
+  </header>
+
+  <section class="problem" aria-label="题目">
+    <p><strong>题 8</strong>　证明：如果 \(\displaystyle\lim_{n\to\infty}\frac{a_{n+1}}{a_n}\) 存在，那么下列三个幂级数有相同的收敛半径。</p>
+    \[\sum a_n z^n,\qquad \sum \frac{a_n}{n+1}\,z^{n+1},\qquad \sum n\,a_n z^{n-1}\]
+  </section>
+
+  <section>
+    <h2><span class="no">一</span>先看原级数</h2>
+    <p>设 \(\displaystyle\lim_{n\to\infty}\frac{a_{n+1}}{a_n}=l\)，于是 \(\left|\dfrac{a_{n+1}}{a_n}\right|\to|l|\)。固定一个 \(z\neq0\)，看相邻两项的模之比：</p>
+    \[\frac{|a_{n+1}z^{n+1}|}{|a_n z^n|}=\left|\frac{a_{n+1}}{a_n}\right|\,|z|\;\longrightarrow\;|l|\,|z| .\]
+    <p>若 \(|l||z|&lt;1\)，由比值判别法，级数绝对收敛。若 \(|l||z|&gt;1\)，通项的模从某项起递增，不趋于 0，级数发散。所以</p>
+    \[R=\frac{1}{|l|}\qquad(\,l=0\ \text{时}\ R=\infty\,).\]
+    <p class="note">这一步只用到“系数之比的极限是 \(l\)”。任何幂级数只要系数之比趋于 \(l\)，收敛半径就是 \(1/|l|\)。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">二</span>再算另两个级数的系数之比</h2>
+    <p><strong>逐项积分的那个。</strong>记 \(b_n=\dfrac{a_n}{n+1}\)，则 \(\sum b_n z^{n+1}=z\sum b_n z^n\)，乘一个 \(z\) 不改变敛散。而</p>
+    \[\frac{b_{n+1}}{b_n}=\frac{a_{n+1}}{a_n}\cdot\frac{n+1}{n+2}\;\longrightarrow\;l\cdot 1=l .\]
+    <p><strong>逐项求导的那个。</strong>记 \(c_n=n\,a_n\)，当 \(z\neq0\) 时 \(\sum c_n z^{n-1}=\dfrac1z\sum c_n z^n\)，同样不改变敛散。而</p>
+    \[\frac{c_{n+1}}{c_n}=\frac{a_{n+1}}{a_n}\cdot\frac{n+1}{n}\;\longrightarrow\;l\cdot 1=l .\]
+    <p class="key">多出来的因子 <em>(n+1)/(n+2)</em> 与 <em>(n+1)/n</em> 都趋于 <em>1</em>。</p>
+  </section>
+
+  <section>
+    <h2><span class="no">三</span>三者同归</h2>
+    <p>三个级数的系数之比有同一个极限 \(l\)。把第一步的结论分别用在 \(\sum a_nz^n\)、\(\sum b_nz^n\)、\(\sum c_nz^n\) 上，三个收敛半径都等于 \(1/|l|\)。证毕。</p>
+  </section>
+
+  <section class="figure" aria-label="图一：三条比值汇成一线">
+    <h2>图一　三水归一</h2>
+    <p>选一个具体的 \(a_n\)，画出三个级数各自的系数之比。开头三条线各走各的，往右越贴越紧，最后都伏在虚线 \(l\) 上。</p>
+    <div class="presets" role="group" aria-label="选择系数">
+      <span>系数</span>
+      <button type="button" id="preset-a" data-p="0" aria-pressed="true">a<sub>n</sub> = 2<sup>n</sup></button>
+      <button type="button" id="preset-b" data-p="1" aria-pressed="false">a<sub>n</sub> = (n+1)/3<sup>n</sup></button>
+      <button type="button" id="preset-c" data-p="2" aria-pressed="false">a<sub>n</sub> = 1/n!</button>
+    </div>
+    <div class="legend">
+      <span><i class="sw1"></i>原级数 Σ a<sub>n</sub>z<sup>n</sup></span>
+      <span><i class="sw2"></i>逐项积分 Σ a<sub>n</sub>z<sup>n+1</sup>/(n+1)</span>
+      <span><i class="sw3"></i>逐项求导 Σ n a<sub>n</sub>z<sup>n−1</sup></span>
+    </div>
+    <canvas id="ratio" role="img" aria-label="三个级数系数之比随 n 变化的折线图，三条线都趋于同一个极限 l"></canvas>
+    <p class="cap" id="ratio-cap"></p>
+  </section>
+
+  <section class="figure" aria-label="图二：复平面上的收敛圆">
+    <h2>图二　一圆定三局</h2>
+    <p>左边是复平面，墨圈是半径为 \(R\) 的收敛圆。拖动朱砂点 \(z\)，右边显示三个级数第 \(n\) 项的大小。点在圈内，三条线一齐沉下去；点在圈外，三条线一齐扬起来。</p>
+    <div class="pair">
+      <div>
+        <canvas id="plane" tabindex="0" role="img" aria-label="复平面与收敛圆，可拖动点 z"></canvas>
+        <div class="slider">
+          <label for="rho">|z|</label>
+          <input type="range" id="rho" min="0" max="1000" value="300">
+          <output id="rho-out" for="rho"></output>
+        </div>
+      </div>
+      <div>
+        <canvas id="terms" role="img" aria-label="三个级数第 n 项的模（对数刻度）随 n 变化的图"></canvas>
+        <p class="cap">纵轴是第 n 项的模，对数刻度。横线“1”以下越走越小，以上越走越大。</p>
+      </div>
+    </div>
+    <p class="verdict" id="verdict" aria-live="polite"></p>
+  </section>
+
+  <section>
+    <h2>余论</h2>
+    <div class="after">
+      <p><strong>圆周上不保证相同。</strong>题目只说半径相同。取 \(a_n=1\)：\(\sum z^n\) 在 \(|z|=1\) 上处处发散，而 \(\sum \dfrac{z^{n+1}}{n+1}\) 在圆周上除 \(z=1\) 外都收敛。</p>
+      <p><strong>第二、三个级数的来历。</strong>它们正是 \(\sum a_nz^n\) 的逐项积分与逐项求导。这道题说的就是：对幂级数逐项积分、求导，收敛半径不变。</p>
+      <p><strong>条件可以去掉。</strong>即使 \(\lim a_{n+1}/a_n\) 不存在，结论仍然成立：用柯西–阿达马公式 \(1/R=\varlimsup\sqrt[n]{|a_n|}\)，再注意 \(\sqrt[n]{n}\to1\) 即可。题目加上这个条件，是为了只用比值判别法就能做完。</p>
+    </div>
+  </section>
+
+  <p class="back"><a href="../../index.html">← 返回 PDE 专题目录</a>　·　<a href="README.md">说明与验证</a>　·　首次打开需联网加载 MathJax 与字体</p>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const css = getComputedStyle(document.documentElement);
+  let T = {};
+  function readTheme(){
+    const g = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    T = { ink:g('--ink-rgb'), indigo:g('--indigo-rgb'), ochre:g('--ochre-rgb'), cin:g('--cinnabar-rgb') };
+  }
+  const col = (rgb,a) => `rgb(${rgb} / ${a})`;
+  function rng(seed){ let a = seed>>>0; return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function lnFact(n){ let s=0; for(let k=2;k<=n;k++) s+=Math.log(k); return s; }
+
+  const presets = [
+    { l:2,   lText:'l = 2',   R:0.5,      RText:'R = 1/2', view:1.1, r:n=>2,                 la:n=>n*Math.LN2,
+      cap:'aₙ = 2ⁿ：原级数的比值恒为 2，另两条是 2(n+1)/(n+2) 与 2(n+1)/n，从两侧夹向 2。' },
+    { l:1/3, lText:'l = 1/3', R:3,        RText:'R = 3',   view:6,   r:n=>(n+2)/(3*(n+1)),   la:n=>Math.log(n+1)-n*Math.log(3),
+      cap:'aₙ = (n+1)/3ⁿ：逐项积分后系数恰好是 1/3ⁿ，比值恒为 1/3；另两条从上方落向 1/3。' },
+    { l:0,   lText:'l = 0',   R:Infinity, RText:'R = ∞',   view:6,   r:n=>1/(n+1),           la:n=>-lnFact(n),
+      cap:'aₙ = 1/n!：三个比值分别是 1/(n+1)、1/(n+2)、1/n，都趋于 0，收敛半径为无穷。' }
+  ];
+  let P = presets[0];
+  let z = { x:0.3*Math.cos(0.6), y:0.3*Math.sin(0.6) };
+
+  function fit(cv){
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if(!w || !h) return null;
+    if(cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    return { ctx, w, h };
+  }
+  const FONT = (px,wt) => `${wt||400} ${px}px "Noto Serif SC","Songti SC",serif`;
+
+  /* 卷首远山 */
+  function drawHills(){
+    const f = fit($('hills')); if(!f) return; const {ctx,w,h} = f;
+    const layers = [ {base:.42, amp:.22, a:.10, seed:7}, {base:.58, amp:.26, a:.18, seed:23}, {base:.78, amp:.20, a:.34, seed:51} ];
+    layers.forEach(L => {
+      const rnd = rng(L.seed);
+      const ws = [0,1,2,3].map(i => ({ f:(1.2+i*1.7+rnd()*1.2)*Math.PI*2/Math.max(w,500), p:rnd()*6.28, a:1/(i+1.2) }));
+      const yAt = x => { let s=0; ws.forEach(o => s += o.a*Math.sin(x*o.f+o.p)); return h*(L.base - L.amp*0.5*(s/1.6+0.45)); };
+      ctx.beginPath(); ctx.moveTo(0,h);
+      for(let x=0;x<=w;x+=3) ctx.lineTo(x,yAt(x));
+      ctx.lineTo(w,h); ctx.closePath();
+      const g = ctx.createLinearGradient(0,h*(L.base-L.amp),0,h);
+      g.addColorStop(0,col(T.ink,L.a)); g.addColorStop(.75,col(T.ink,L.a*.12)); g.addColorStop(1,col(T.ink,0));
+      ctx.fillStyle = g; ctx.fill();
+    });
+  }
+
+  /* 一笔圆相：多根笔毫并行，收笔处飞白 */
+  function enso(ctx,cx,cy,rad,seed){
+    const rnd = rng(seed), B = 16;
+    const w = Math.max(5, Math.min(15, rad*0.1));
+    const a0 = -2.25, span = Math.PI*1.94, steps = 200;
+    ctx.lineCap = 'round';
+    for(let b=0;b<B;b++){
+      const o = rnd(), ph = rnd()*6.28, fq = 1+rnd()*3, wob = (rnd()-.5)*1.2;
+      ctx.beginPath(); let pen = false;
+      for(let i=0;i<=steps;i++){
+        const t = i/steps;
+        const wt = w*(0.45+0.55*Math.sqrt(Math.sin(Math.PI*Math.min(1,t*0.95+0.12))));
+        const dry = t>0.5 && Math.sin(t*fq*11+ph) < (t-0.5)*2.6-0.75;
+        if(dry){ pen=false; continue; }
+        const rr = rad + (b/(B-1)-0.5)*wt + wob*Math.sin(t*5+ph);
+        const th = a0 + span*t;
+        const x = cx+rr*Math.cos(th), y = cy+rr*Math.sin(th);
+        if(pen) ctx.lineTo(x,y); else { ctx.moveTo(x,y); pen=true; }
+      }
+      ctx.lineWidth = w/B*1.7;
+      ctx.strokeStyle = col(T.ink, 0.3+0.6*o);
+      ctx.stroke();
+    }
+  }
+
+  /* 图一 */
+  function drawRatio(){
+    const f = fit($('ratio')); if(!f) return; const {ctx,w,h} = f;
+    const m = {l:40,r:58,t:14,b:30}, N = 30;
+    const S = [ n=>P.r(n), n=>P.r(n)*(n+1)/(n+2), n=>P.r(n)*(n+1)/n ];
+    const ymax = Math.max(S[0](1),S[1](1),S[2](1))*1.08;
+    const X = n => m.l + (n-1)/(N-1)*(w-m.l-m.r), Y = v => h-m.b - v/ymax*(h-m.t-m.b);
+    const step = ymax>2 ? 1 : 0.25;
+    ctx.font = FONT(12); ctx.textBaseline = 'middle';
+    for(let v=0; v<=ymax+1e-9; v+=step){
+      ctx.strokeStyle = col(T.ink, v===0?.5:.1); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(m.l,Y(v)); ctx.lineTo(w-m.r,Y(v)); ctx.stroke();
+      ctx.fillStyle = col(T.ink,.6); ctx.textAlign = 'right'; ctx.fillText(String(+v.toFixed(2)), m.l-8, Y(v));
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    [1,5,10,15,20,25,30].forEach(n => ctx.fillText(n===30?'n = 30':String(n), X(n), h-m.b+8));
+    // 极限线
+    ctx.setLineDash([5,5]); ctx.strokeStyle = col(T.cin,.85); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(m.l,Y(P.l)); ctx.lineTo(w-m.r,Y(P.l)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col(T.cin,1); ctx.textAlign = 'left'; ctx.textBaseline = P.l===0?'bottom':'middle'; ctx.font = FONT(13,600);
+    ctx.fillText(P.lText, w-m.r+8, Y(P.l)-(P.l===0?3:0));
+    const cs = [T.ochre, T.indigo, T.ink], order = [2,1,0];
+    order.forEach((k,j) => {
+      ctx.strokeStyle = col(cs[j],.92); ctx.lineWidth = k===0?2.6:2.2; ctx.lineJoin = 'round';
+      ctx.beginPath(); for(let n=1;n<=N;n++){ const x=X(n), y=Y(S[k](n)); n===1?ctx.moveTo(x,y):ctx.lineTo(x,y); } ctx.stroke();
+      ctx.fillStyle = col(cs[j],1);
+      for(let n=1;n<=N;n+= (n<6?1:4)){ ctx.beginPath(); ctx.arc(X(n),Y(S[k](n)),2.6,0,6.3); ctx.fill(); }
+    });
+    $('ratio-cap').textContent = P.cap;
+  }
+
+  /* 图二：复平面 */
+  let geo = null;
+  function drawPlane(){
+    const f = fit($('plane')); if(!f) return; const {ctx,w,h} = f;
+    const cx = w/2, cy = h/2, s = (Math.min(w,h)/2-10)/P.view;
+    geo = {cx,cy,s};
+    if(P.R === Infinity){
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,w*.75);
+      g.addColorStop(0,col(T.ink,.05)); g.addColorStop(1,col(T.ink,.16));
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    } else {
+      const R = P.R*s, g = ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+      g.addColorStop(0,col(T.ink,.03)); g.addColorStop(.8,col(T.ink,.1)); g.addColorStop(1,col(T.ink,.17));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx,cy,R,0,6.3); ctx.fill();
+    }
+    ctx.strokeStyle = col(T.ink,.35); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(4,cy); ctx.lineTo(w-4,cy); ctx.moveTo(cx,4); ctx.lineTo(cx,h-4); ctx.stroke();
+    ctx.font = FONT(12); ctx.fillStyle = col(T.ink,.6);
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText('Re', w-6, cy-4);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Im', cx+6, 6);
+    ctx.font = FONT(14,600); ctx.fillStyle = col(T.ink,.9);
+    if(P.R === Infinity){
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText('R = ∞，整个平面都是收敛域', 10, h-10);
+    } else {
+      enso(ctx,cx,cy,P.R*s,11);
+      const a = -Math.PI*0.27, lr = P.R*s+14;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText(P.RText, cx+lr*Math.cos(a), cy+lr*Math.sin(a));
+    }
+    const px = cx+z.x*s, py = cy-z.y*s;
+    ctx.strokeStyle = col(T.cin,.55); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+    ctx.fillStyle = col(T.cin,.2); ctx.beginPath(); ctx.arc(px,py,13,0,6.3); ctx.fill();
+    ctx.fillStyle = col(T.cin,1); ctx.beginPath(); ctx.arc(px,py,6.5,0,6.3); ctx.fill();
+    ctx.font = `italic 600 16px "Noto Serif SC",serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('z', Math.min(px+11,w-16), Math.max(py-7,20));
+  }
+
+  /* 图二：通项大小 */
+  function drawTerms(){
+    const f = fit($('terms')); if(!f) return; const {ctx,w,h} = f;
+    const m = {l:44,r:12,t:12,b:30}, N = 40, LIM = 12;
+    const rho = Math.max(Math.hypot(z.x,z.y),1e-9), lr = Math.log(rho), L10 = Math.LN10;
+    const S = [ n=>(P.la(n)+n*lr)/L10, n=>(P.la(n)-Math.log(n+1)+(n+1)*lr)/L10, n=>(Math.log(n)+P.la(n)+(n-1)*lr)/L10 ];
+    const X = n => m.l + (n-1)/(N-1)*(w-m.l-m.r), Y = v => m.t + (LIM-v)/(2*LIM)*(h-m.t-m.b);
+    ctx.font = FONT(12); ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+    [[-10,'10⁻¹⁰'],[-5,'10⁻⁵'],[0,'1'],[5,'10⁵'],[10,'10¹⁰']].forEach(([v,t]) => {
+      ctx.strokeStyle = col(T.ink, v===0?.5:.1); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(m.l,Y(v)); ctx.lineTo(w-m.r,Y(v)); ctx.stroke();
+      ctx.fillStyle = col(T.ink,.6); ctx.fillText(t, m.l-7, Y(v));
+    });
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    [1,10,20,30,40].forEach(n => ctx.fillText(n===40?'n = 40':String(n), Math.min(X(n),w-24), h-m.b+8));
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l-3,m.t,w-m.l-m.r+6,h-m.t-m.b); ctx.clip();
+    const cs = [T.ochre, T.indigo, T.ink], order = [2,1,0];
+    order.forEach((k,j) => {
+      ctx.strokeStyle = col(cs[j],.92); ctx.lineWidth = k===0?2.6:2.2; ctx.lineJoin = 'round';
+      ctx.beginPath(); for(let n=1;n<=N;n++){ const x=X(n), y=Y(Math.max(-40,Math.min(40,S[k](n)))); n===1?ctx.moveTo(x,y):ctx.lineTo(x,y); } ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function updateText(){
+    const rho = Math.hypot(z.x,z.y), v = $('verdict');
+    $('rho-out').textContent = rho.toFixed(2);
+    $('rho').value = Math.round(Math.min(1,rho/P.view)*1000);
+    const zs = '|z| = '+rho.toFixed(2);
+    if(P.R === Infinity){ v.className = 'verdict'; v.textContent = zs+'。R = ∞，点落在哪里，三个级数都收敛。'; }
+    else if(Math.abs(rho-P.R) < P.R*0.012){ v.className = 'verdict'; v.textContent = zs+'，正压在圆周上。这里三个级数要逐个另行判断。'; }
+    else if(rho < P.R){ v.className = 'verdict'; v.textContent = zs+' < '+P.RText.replace('R = ','R = ')+'，三个级数都绝对收敛。'; }
+    else { v.className = 'verdict out'; v.textContent = zs+' > '+P.RText+'，三个级数的通项都不趋于 0，全部发散。'; }
+  }
+  function drawFig2(){ drawPlane(); drawTerms(); updateText(); }
+  function drawAll(){ readTheme(); drawHills(); drawRatio(); drawFig2(); }
+
+  // 选系数
+  document.querySelectorAll('.presets button').forEach(b => b.addEventListener('click', () => {
+    P = presets[+b.dataset.p];
+    document.querySelectorAll('.presets button').forEach(o => o.setAttribute('aria-pressed', String(o===b)));
+    const rho = P.R === Infinity ? 2.5 : P.R*0.6;
+    z = { x:rho*Math.cos(0.6), y:rho*Math.sin(0.6) };
+    drawRatio(); drawFig2();
+  }));
+
+  // 拖动 z
+  const plane = $('plane'); let dragging = false;
+  function setFromEvent(e){
+    if(!geo) return;
+    const r = plane.getBoundingClientRect();
+    let x = (e.clientX-r.left-geo.cx)/geo.s, y = -(e.clientY-r.top-geo.cy)/geo.s;
+    const d = Math.hypot(x,y); if(d > P.view){ x *= P.view/d; y *= P.view/d; }
+    z = {x,y}; drawFig2();
+  }
+  plane.addEventListener('pointerdown', e => { dragging = true; plane.setPointerCapture(e.pointerId); plane.style.cursor = 'grabbing'; setFromEvent(e); });
+  plane.addEventListener('pointermove', e => { if(dragging) setFromEvent(e); });
+  const stop = () => { dragging = false; plane.style.cursor = 'grab'; };
+  plane.addEventListener('pointerup', stop); plane.addEventListener('pointercancel', stop);
+  plane.addEventListener('keydown', e => {
+    const d = P.view/40, k = {ArrowLeft:[-d,0],ArrowRight:[d,0],ArrowUp:[0,d],ArrowDown:[0,-d]}[e.key];
+    if(!k) return; e.preventDefault();
+    let x = z.x+k[0], y = z.y+k[1]; const m = Math.hypot(x,y); if(m > P.view){ x *= P.view/m; y *= P.view/m; }
+    z = {x,y}; drawFig2();
+  });
+  $('rho').addEventListener('input', e => {
+    const rho = e.target.value/1000*P.view, cur = Math.hypot(z.x,z.y);
+    const th = cur > 1e-6 ? Math.atan2(z.y,z.x) : 0.6;
+    z = { x:rho*Math.cos(th), y:rho*Math.sin(th) };
+    drawPlane(); drawTerms();
+    const keep = e.target.value; updateText(); e.target.value = keep;
+  });
+
+  drawAll();
+  if(window.ResizeObserver) new ResizeObserver(drawAll).observe(document.querySelector('.scroll'));
+  else window.addEventListener('resize', drawAll);
+  if(window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawAll);
+  new MutationObserver(drawAll).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
+</body>
+</html>

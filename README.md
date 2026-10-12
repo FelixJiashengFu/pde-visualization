@@ -11,8 +11,9 @@
 | 椭圆型 · 势场与平衡 | 调和函数：矩形与长方体 | `Δu=0`；Strauss 6.1–6.2、分离变量、边界模态衰减和最大值原理；需联网加载 3D 与公式库 | [打开交互页](topics/laplace-rectangles-cuboids/index.html) · [说明](topics/laplace-rectangles-cuboids/README.md) |
 | 椭圆型 · 势场与平衡 | 调和函数：从边界到内部 | `Δu=0`；Poisson 公式、平均值性质、强最大值原理、Green 恒等式与能量 | [打开交互页](topics/harmonic-functions/index.html) · [说明](topics/harmonic-functions/README.md) |
 | 椭圆型 · 势场与平衡 | Hopf 最大值原理 | `Δu ≥ 0`；边界点引理、障碍函数与外法向导数 | [打开交互页](topics/hopf-maximum-principle/index.html) · [说明](topics/hopf-maximum-principle/README.md) |
+| 分析工具 · 级数与收敛 | 幂级数同径图解 | `Σaₙzⁿ` 与其逐项积分、逐项求导的收敛半径相同；比值判别法、水墨风格交互图；需联网加载公式库与字体 | [打开交互页](topics/power-series-radius/index.html) · [说明](topics/power-series-radius/README.md) |
 
-目前收录 5 个专题。后续可按**双曲型（波动与振动）**、**抛物型（热传导与扩散）**、**椭圆型（势场与平衡）**、**非线性与耦合方程**继续扩展；分类表示专题的主要教学主题，必要时可在说明中标出跨类性质。
+目前收录 6 个专题。后续可按**双曲型（波动与振动）**、**抛物型（热传导与扩散）**、**椭圆型（势场与平衡）**、**非线性与耦合方程**、**分析工具（级数与收敛）**继续扩展；分类表示专题的主要教学主题，必要时可在说明中标出跨类性质。
 
 ## 仓库结构
 
@@ -41,11 +42,16 @@ pde-visualization/
     │   ├── preview.png                # 专题示意预览图
     │   ├── README.md                  # 定理、交互参数与适用范围
     │   └── source/                    # 可编辑网页、构建脚本与依赖许可证
-    └── maxwell-euler/
-        ├── index.html                 # 内嵌 MathJax 的离线单文件页
-        ├── preview.png                # 专题预览图
-        ├── README.md                  # 方程、条件、数值方法与适用范围
-        └── source/                    # 可编辑项目、图像与验证脚本
+    ├── maxwell-euler/
+    │   ├── index.html                 # 内嵌 MathJax 的离线单文件页
+    │   ├── preview.png                # 专题预览图
+    │   ├── README.md                  # 方程、条件、数值方法与适用范围
+    │   └── source/                    # 可编辑项目、图像与验证脚本
+    └── power-series-radius/
+        ├── index.html                 # 水墨风格单文件页；需联网加载 MathJax 与字体
+        ├── preview.png
+        ├── README.md                  # 命题、证明思路、读图说明与适用范围
+        └── source/                    # 数值核对脚本
 ```
 
 ## 今后新增专题
@@ -60,3 +66,4 @@ pde-visualization/
 调和函数专题已通过 12 项独立数学检查与离线浏览器检查，见其 [源码说明](topics/harmonic-functions/source/README.md)。
 Strauss 6.1–6.2 专题已通过脚本语法、边界条件、四阶差分残差与页面结构检查，见其 [验证脚本](topics/laplace-rectangles-cuboids/source/verify.cjs)。
 Maxwell 与 Euler 专题已通过 47 项数值检查、重建及单文件结构检查，见其 [源码说明](topics/maxwell-euler/source/README.md)。
+幂级数同径专题已通过 27 项数值检查，见其 [验证脚本](topics/power-series-radius/source/verify.cjs)。
