@@ -1,6 +1,6 @@
 # PDE Visualization
 
-交互式偏微分方程可视化专题库。与 [NMR-Graph](https://github.com/Uugyfgyb/NMR-Graph) 一样，根目录的 [专题目录](index.html)负责分类和导航；每个专题放在 `topics/<slug>/` 下。专题的 `index.html` 是可独立打开的单文件网页，`source/` 保存验证材料。多数专题可离线使用；Strauss 6.1–6.2 专题首次打开需联网加载 Three.js 和 MathJax。
+交互式偏微分方程可视化专题库。与 [NMR-Graph](https://github.com/FelixJiashengFu/NMR-Graph) 一样，根目录的 [专题目录](index.html)负责分类和导航；每个专题放在 `topics/<slug>/` 下。专题的 `index.html` 是可独立打开的单文件网页，`source/` 保存验证材料。多数专题可离线使用；Strauss 6.1–6.2 专题首次打开需联网加载 Three.js 和 MathJax。
 
 ## 专题
 
