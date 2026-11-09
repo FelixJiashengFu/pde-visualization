@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="热方程交互可视化：分离变量的模态衰减、热核卷积与无穷传播速度、显式差分的稳定性条件。">
+<title>热方程｜分离变量 · 热核 · 差分稳定性</title>
+<style>
+:root{--bg:#0b1020;--canvas:#0a0e27;--panel:rgba(22,31,57,.79);--line:#344462;--text:#edf4ff;--muted:#aebbd4;--soft:#cbd5e1;--cyan:#2dd4bf;--pink:#ec4899;--gold:#fbbf24;--violet:#a78bfa;--blue:#77a6ff;--orange:#fb923c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% -12%,#25365b 0,transparent 34%),radial-gradient(circle at 90% 4%,#1b1741 0,transparent 28%),var(--bg);color:var(--text);font:16px/1.62 system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+a{color:#9cc7ff}a:hover{color:#c8ddff}.wrap{width:min(1220px,calc(100% - 32px));margin:auto}.hero{padding:55px 0 32px}.eyebrow{color:var(--gold);font-weight:750;letter-spacing:.16em;font-size:.76rem;text-transform:uppercase}.hero h1{font-size:clamp(2rem,4.8vw,3.6rem);line-height:1.12;letter-spacing:-.035em;margin:12px 0}.hero p{max-width:820px;color:var(--soft);font-size:1.07rem;margin:0}.hero .sub{margin-top:12px;color:var(--muted);font-size:.92rem}.nav{display:flex;flex-wrap:wrap;gap:8px;margin:25px 0 0}.nav a{text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#121c34;color:var(--soft);font-size:.86rem}.nav a:hover{border-color:var(--cyan)}
+main{padding-bottom:60px}section{margin:24px 0 48px}h2{font-size:1.55rem;margin:0 0 16px;letter-spacing:-.015em}.section-kicker{font-size:.77rem;letter-spacing:.11em;color:var(--violet);font-weight:800;text-transform:uppercase;margin-bottom:3px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:var(--panel);border:1px solid rgba(131,155,197,.23);border-radius:18px;padding:22px;box-shadow:0 12px 35px rgba(1,6,20,.17)}.card h3{margin:0 0 10px;font-size:1.1rem}.card p{margin:8px 0;color:var(--soft)}.tag{display:inline-block;border:1px solid var(--line);background:#111a31;border-radius:999px;padding:2px 10px;color:var(--muted);font-size:.78rem}.conclusion{border-left:4px solid var(--gold);padding:16px 20px;background:linear-gradient(90deg,rgba(251,191,36,.12),rgba(251,191,36,.035));border-radius:0 15px 15px 0;margin-top:16px;color:var(--soft)}.conclusion strong{color:#ffe49b}
+.eq{overflow-x:auto;padding:13px 16px;background:#0a1429;border:1px solid rgba(110,135,187,.22);border-radius:10px;color:#f4f8ff;margin:11px 0 0;text-align:center;font-family:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;font-size:1.12rem;white-space:nowrap}.eq i{font-style:italic}.eq .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}.eq .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}.eq .frac>span{font-size:.88em;line-height:1.25}.eq .big{font-size:1.5em;vertical-align:-.12em}.symbol-note{font-size:.84rem;line-height:1.55;color:var(--muted);padding:7px 3px 0;margin:0 0 6px}.symbol-note b{color:var(--soft);font-weight:650}code{background:#101a31;border:1px solid #263955;border-radius:5px;padding:0 4px;font-size:.88em}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:14px}.control{min-width:120px;flex:1 1 130px}.control.sel{flex:1 1 230px}.control label{display:block;font-size:.8rem;color:var(--muted);font-weight:650;margin-bottom:5px}.control label output{color:var(--gold);font-weight:800;margin-left:4px}.control input,.control select{width:100%;background:#111b34;color:var(--text);border:1px solid #52647f;border-radius:9px;padding:9px 10px;font:inherit;min-height:42px}.control input:focus-visible,.control select:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.control.range{flex:2 1 180px}.control.range input{padding:0;border:0;background:transparent;height:42px;accent-color:var(--violet)}button{font:inherit;min-height:42px;border:1px solid #cc9b27;background:#dcae3d;color:#101526;border-radius:9px;padding:7px 15px;font-weight:800;cursor:pointer}button:hover{background:#f2c757}button.ghost{background:#111b34;color:var(--soft);border-color:#52647f}button.ghost:hover{border-color:var(--gold);background:#16223f}.btns{display:flex;gap:8px;flex-wrap:wrap}.hint{font-size:.8rem;color:var(--muted);width:100%;margin:-2px 0 0}
+.viz-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}.viz-card{padding:15px 15px 12px;min-width:0}.viz-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 10px;flex-wrap:wrap}.viz-title h3{margin:0;font-size:1rem}.viz-title span{font-size:.8rem;color:var(--muted)}canvas.plot{display:block;width:100%;height:360px;background:var(--canvas);border-radius:12px;border:1px solid #263958;touch-action:none}canvas.plot.tall{height:420px}canvas.plot.short{height:260px}.legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:10px 3px 2px;color:var(--soft);font-size:.82rem}.swatch{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}.swatch.dash{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)!important}.swatch.box{height:11px;width:11px;vertical-align:-1px}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}.metric{background:#101a31;border:1px solid #263955;padding:10px 13px;border-radius:12px;min-width:0}.metric label{display:block;color:var(--muted);font-size:.76rem}.metric strong{display:block;font-size:1.02rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.status{margin-top:13px;padding:12px 15px;border-radius:12px;background:#0f1c33;border:1px solid #2b4466;color:var(--soft);font-size:.9rem}.status b{color:var(--gold)}.status.warn{border-color:#8b3a55;background:#2a1224}.caption{font-size:.86rem;color:var(--muted);margin:12px 3px 0}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.step{padding:19px}.step-num{display:inline-flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%;background:#2b2350;color:#d2c2ff;font-size:.83rem;font-weight:800;margin-right:8px}.step h3{display:inline;font-size:1.03rem}.step p{color:var(--soft);margin:8px 0 0}.wide-step{grid-column:1/-1}.table-wrap{overflow-x:auto;border:1px solid rgba(131,155,197,.25);border-radius:13px;background:#121c34}table{border-collapse:collapse;width:100%;min-width:560px}th,td{text-align:left;padding:10px 13px;border-bottom:1px solid #2b3b58;vertical-align:top}th{font-size:.83rem;color:#b9ceef;background:#17253e}td{font-size:.88rem;color:var(--soft)}tr:last-child td{border-bottom:0}td:first-child{font-family:"Cambria Math","Times New Roman",serif;font-size:1rem;color:var(--text);white-space:nowrap}.limit-list{padding-left:20px;color:var(--soft)}.limit-list li{margin:7px 0}.footer{color:var(--muted);font-size:.82rem;border-top:1px solid #2a3852;padding:24px 0 40px}.footer p{margin:5px 0}
+.grid2>*,.grid3>*,.steps>*,.viz-grid>*{min-width:0}.eq{max-width:100%}
+@media(max-width:880px){.btns{flex-wrap:wrap}.card{padding:16px}.viz-card{padding:10px}.grid2,.grid3,.viz-grid,.steps{grid-template-columns:1fr}.wide-step{grid-column:auto}.readout{grid-template-columns:repeat(2,minmax(0,1fr))}canvas.plot{height:300px}canvas.plot.tall{height:340px}.hero{padding:38px 0 22px}}
+</style>
+</head>
+<body>
+<header class="wrap hero">
+  <div class="eyebrow">Heat equation · 抛物型 · 热与扩散</div>
+  <h1>热方程：<br>温度如何被慢慢抹平</h1>
+  <p>同一个方程 u<sub>t</sub> = k u<sub>xx</sub>，三种看法：在有界杆上把初温分解成正弦模态、各自指数衰减；在无穷直线上把初温与高斯热核做卷积；在计算机上用显式差分一步步推进，并看清它何时会“炸”。</p>
+  <p class="sub">全部图形在浏览器内实时计算，单文件、可离线打开。长度、时间、温度都是无量纲教学单位。</p>
+  <nav class="nav" aria-label="页内导航">
+    <a href="#problem">方程与结论</a><a href="#exp1">实验一 · 分离变量</a><a href="#exp2">实验二 · 热核</a><a href="#exp3">实验三 · 差分稳定性</a><a href="#derivation">推导</a><a href="#symbols">符号表</a><a href="#limits">限制</a><a href="../../index.html">← 专题目录</a>
+  </nav>
+</header>
+<main class="wrap">
+<section id="problem">
+  <div class="section-kicker">Problem</div>
+  <h2>方程、初边值条件与三条结论</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>有界杆上的初边值问题</h3>
+      <div class="eq">u<sub>t</sub> = k u<sub>xx</sub>,&nbsp; 0&lt;x&lt;1,&nbsp; t&gt;0;&nbsp;&nbsp; u(x,0)=φ(x)</div>
+      <p class="symbol-note"><b>读法：</b>“u 对 t 的偏导等于 k 乘 u 对 x 的二阶偏导”。<b>u(x,t)</b> 是位置 x、时刻 t 的温度；<b>k&gt;0</b> 是热扩散系数；<b>φ</b> 是初始温度分布。</p>
+      <div class="eq">Dirichlet：u(0,t)=u(1,t)=0 &nbsp;|&nbsp; Neumann：u<sub>x</sub>(0,t)=u<sub>x</sub>(1,t)=0</div>
+      <p class="symbol-note">Dirichlet 表示两端浸在 0 度的恒温槽里；Neumann 表示两端绝热、没有热流穿过。</p>
+    </div>
+    <div class="card">
+      <h3>分离变量给出的级数解（Dirichlet）</h3>
+      <div class="eq">u(x,t) = <span class="big">Σ</span><sub>n≥1</sub> b<sub>n</sub> e<sup>−n²π²kt</sup> sin(nπx),&nbsp;&nbsp; b<sub>n</sub> = 2∫<sub>0</sub><sup>1</sup> φ(x) sin(nπx) dx</div>
+      <p class="symbol-note"><b>b<sub>n</sub></b> 是初温的第 n 个正弦系数；<b>e<sup>−n²π²kt</sup></b> 是第 n 个模态的衰减因子，衰减率与 n² 成正比。Neumann 情形把 sin 换成 cos，并多出不衰减的平均温度 a<sub>0</sub>=∫φ。</p>
+      <div class="conclusion"><strong>结论 1（平滑化）：</strong>只要 t&gt;0，高频模态被 e<sup>−n²π²kt</sup> 压得极快，所以 u(·,t) 是光滑函数——即使 φ 有跳跃。</div>
+    </div>
+    <div class="card">
+      <h3>无穷直线上的热核公式</h3>
+      <div class="eq">u(x,t) = ∫<sub>−∞</sub><sup>∞</sup> S(x−y,t) φ(y) dy,&nbsp;&nbsp; S(z,t) = <span class="frac"><span>1</span><span>√(4πkt)</span></span> e<sup>−z²/(4kt)</sup></div>
+      <p class="symbol-note"><b>S</b> 叫热核（基本解），是方差为 2kt 的高斯密度：∫S dz = 1。读作“u 在 x 处的值是初温以 S 为权重的加权平均”。</p>
+      <div class="conclusion"><strong>结论 2（无穷传播速度）：</strong>只要 φ≥0 且不恒为零，任意 t&gt;0 时所有 x 处都有 u(x,t)&gt;0——热“瞬间”传到无穷远，只是极其微弱。</div>
+    </div>
+    <div class="card">
+      <h3>最大值原理与数值稳定性</h3>
+      <div class="eq">max<sub>[0,1]×[0,T]</sub> u = max{ 初值的最大值, 边界值的最大值 }</div>
+      <p class="symbol-note">弱最大值原理：热方程的解不会在内部“自己升温”，最大值只出现在初始时刻或边界上。它直接推出解的唯一性和对初值的稳定性。</p>
+      <div class="eq">显式差分稳定 ⇔ r = <span class="frac"><span>kΔt</span><span>Δx²</span></span> ≤ <span class="frac"><span>1</span><span>2</span></span></div>
+      <div class="conclusion"><strong>结论 3（离散最大值原理）：</strong>r ≤ ½ 时新值是旧值的凸组合，离散解同样服从最大值原理；r &gt; ½ 时最高频的锯齿模态每步被放大 |1−4r| 倍。</div>
+    </div>
+  </div>
+</section>
+
+<section id="exp1">
+  <div class="section-kicker">Experiment 1</div>
+  <h2>实验一：分离变量——每个模态各自衰减</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control sel"><label for="h1-pre">初始温度 φ(x)</label><select id="h1-pre"><option value="box">方块（中段为 1）</option><option value="tri">三角形</option><option value="two">一热一冷两块</option><option value="modes">两个模态 sin πx + ½ sin 6πx</option><option value="const">常数 1（与 Dirichlet 边界不相容）</option><option value="draw">自己画（在左图拖动）</option></select></div>
+      <div class="control sel"><label for="h1-bc">边界条件</label><select id="h1-bc"><option value="dirichlet">两端恒温 0（Dirichlet）</option><option value="neumann">两端绝热（Neumann）</option></select></div>
+      <div class="control range"><label for="h1-k">扩散系数 k <output id="h1-ko">1.00</output></label><input id="h1-k" type="range" min="0.2" max="2" step="0.05" value="1"></div>
+      <div class="control range"><label for="h1-N">保留模态数 N <output id="h1-No">60</output></label><input id="h1-N" type="range" min="1" max="150" step="1" value="60"></div>
+      <div class="control range"><label for="h1-t">时间 t <output id="h1-to">0</output></label><input id="h1-t" type="range" min="0" max="1" step="0.001" value="0"></div>
+      <div class="btns"><button id="h1-play">▶ 播放</button><button class="ghost" id="h1-modes" aria-pressed="false">显示前 3 个模态</button></div>
+      <p class="hint">时间滑块是平方刻度：左半段放大了早期（高频模态迅速消失的阶段）。选“自己画”后在左图按住拖动即可画初温，纵向范围 −1 到 1。</p>
+    </div>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>温度剖面 u(x,t)</h3><span>横轴 x ∈ [0,1]，纵轴温度</span></div>
+        <canvas id="h1-u" class="plot" role="img" aria-label="当前时刻温度剖面，金色实线为 u(x,t)，白色虚线为初温"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>u(x,t)（N 项部分和）</span><span style="color:#cbd5e1"><i class="swatch dash"></i>初温 φ(x)</span><span><i class="swatch" style="background:var(--gold);opacity:.35"></i>t=0 的 N 项部分和</span><span id="h1-modeleg" hidden><i class="swatch" style="background:var(--cyan)"></i>第 1 / <i class="swatch" style="background:var(--pink)"></i>2 / <i class="swatch" style="background:var(--violet)"></i>3 个模态</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>模态振幅谱（对数）</h3><span>横轴模态编号 n，纵轴 log₁₀|系数×衰减因子|</span></div>
+        <canvas id="h1-spec" class="plot" role="img" aria-label="各模态当前振幅的对数柱状图"></canvas>
+        <div class="legend"><span><i class="swatch box" style="background:var(--gold)"></i>当前 |b<sub>n</sub>| e<sup>−n²π²kt</sup></span><span><i class="swatch box" style="background:#ffffff33"></i>初始 |b<sub>n</sub>|</span><span><i class="swatch box" style="background:var(--cyan)"></i>n=0 平均温度（仅 Neumann，不衰减）</span></div>
+      </div>
+    </div>
+    <div class="viz-card card" style="margin-top:16px">
+      <div class="viz-title"><h3>时空图：u(x,t) 的颜色</h3><span>横轴 x，纵轴 t（向上增大，0 到 0.15，平方刻度）；金线 = 当前时刻；颜色：橙 = 热，蓝 = 冷，深色 ≈ 0</span></div>
+      <canvas id="h1-st" class="plot short" role="img" aria-label="温度的时空热图"></canvas>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>当前时刻 t</label><strong id="h1-r-t">0</strong></div>
+      <div class="metric"><label>max |u(·,t)|</label><strong id="h1-r-max">—</strong></div>
+      <div class="metric"><label>总热量 ∫₀¹ u dx</label><strong id="h1-r-Q">—</strong></div>
+      <div class="metric"><label>振幅仍 ≥1% 的模态数</label><strong id="h1-r-live">—</strong></div>
+    </div>
+    <div class="status" id="h1-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="exp2">
+  <div class="section-kicker">Experiment 2</div>
+  <h2>实验二：无穷直线上的热核——加权平均与无穷传播</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control sel"><label for="h2-pre">初始温度 φ</label><select id="h2-pre"><option value="box">方块：−1&lt;x&lt;1 处为 1</option><option value="step">阶跃：x&gt;0 处为 1</option><option value="two">两块（高 1 与 0.6）</option><option value="gauss">窄高斯 e^(−x²/0.35²)</option></select></div>
+      <div class="control range"><label for="h2-k">扩散系数 k <output id="h2-ko">1.00</output></label><input id="h2-k" type="range" min="0.2" max="2" step="0.05" value="1"></div>
+      <div class="control range"><label for="h2-t">时间 t（对数刻度）<output id="h2-to"></output></label><input id="h2-t" type="range" min="-3" max="0.7" step="0.01" value="-1.3"></div>
+      <div class="control range"><label for="h2-x0">观察点 x₀ <output id="h2-x0o">0.80</output></label><input id="h2-x0" type="range" min="-5" max="5" step="0.01" value="0.8"></div>
+      <div class="btns"><button id="h2-play">▶ 播放</button></div>
+      <p class="hint">也可以在左图上直接拖动来移动观察点 x₀。</p>
+    </div>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>u(x,t) 与在 x₀ 处使用的权重</h3><span>横轴 x ∈ [−5,5]</span></div>
+        <canvas id="h2-u" class="plot" role="img" aria-label="直线上热方程的解与热核权重"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>u(x,t)</span><span style="color:#cbd5e1"><i class="swatch dash"></i>初温 φ</span><span><i class="swatch box" style="background:var(--pink);opacity:.6"></i>热核 S(x₀−y,t)（纵向已缩放）</span><span><i class="swatch box" style="background:var(--cyan)"></i>观察点 (x₀, u(x₀,t))</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>随时间：最大值与观察点温度</h3><span>横轴 log₁₀ t，纵轴温度</span></div>
+        <canvas id="h2-hist" class="plot" role="img" aria-label="最大温度与观察点温度随时间的变化"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>max<sub>x</sub> u(x,t)</span><span><i class="swatch" style="background:var(--cyan)"></i>u(x₀,t)</span><span><i class="swatch" style="background:var(--pink)"></i>当前 t</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>热核标准差 σ = √(2kt)</label><strong id="h2-r-s">—</strong></div>
+      <div class="metric"><label>u(x₀, t)</label><strong id="h2-r-u">—</strong></div>
+      <div class="metric"><label>max<sub>x</sub> u(x,t)</label><strong id="h2-r-max">—</strong></div>
+      <div class="metric"><label>远处 x = 5 的温度</label><strong id="h2-r-far">—</strong></div>
+    </div>
+    <div class="status" id="h2-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="exp3">
+  <div class="section-kicker">Experiment 3</div>
+  <h2>实验三：显式差分——r = ½ 这条线</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control range"><label for="h3-r">网格比 r = kΔt/Δx² <output id="h3-ro">0.40</output></label><input id="h3-r" type="range" min="0.05" max="0.75" step="0.01" value="0.4"></div>
+      <div class="control sel"><label for="h3-J">空间网格数 J（Δx = 1/J）</label><select id="h3-J"><option>20</option><option selected>40</option><option>80</option></select></div>
+      <div class="control sel"><label for="h3-pre">初始温度</label><select id="h3-pre"><option value="tri">三角形</option><option value="box">方块（含跳跃）</option><option value="sin">sin πx（只有最低模态）</option></select></div>
+      <div class="btns"><button id="h3-play">▶ 播放</button><button class="ghost" id="h3-step">单步</button><button class="ghost" id="h3-reset">重置</button></div>
+      <p class="hint">k 固定为 1。改 r 或 J 会自动重置。试试：r = 0.48 与 r = 0.52；以及 r = 0.6 时选 sin πx——它要等舍入误差慢慢长大才会炸。</p>
+    </div>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>差分解 vs 级数精确解</h3><span>横轴 x ∈ [0,1]</span></div>
+        <canvas id="h3-u" class="plot" role="img" aria-label="显式差分数值解与精确解对比"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--cyan)"></i>精确解（200 项级数）</span><span><i class="swatch box" style="background:var(--gold);border-radius:50%"></i>差分解 u<sub>j</sub><sup>n</sup></span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>放大因子 G(θ) = 1 − 4r sin²(θ/2)</h3><span>横轴频率 θ ∈ [0,π]，纵轴 G</span></div>
+        <canvas id="h3-G" class="plot" role="img" aria-label="von Neumann 放大因子曲线"></canvas>
+        <div class="legend"><span><i class="swatch box" style="background:#2dd4bf33"></i>稳定带 |G| ≤ 1</span><span><i class="swatch" style="background:var(--gold)"></i>G(θ)</span><span><i class="swatch box" style="background:var(--pink);border-radius:50%"></i>网格上 |G|&gt;1 的模态 θ = mπ/J</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>步数 n / 时刻 t = nΔt</label><strong id="h3-r-n">0</strong></div>
+      <div class="metric"><label>Δt</label><strong id="h3-r-dt">—</strong></div>
+      <div class="metric"><label>max |差分解 − 精确解|</label><strong id="h3-r-err">—</strong></div>
+      <div class="metric"><label>max<sub>m</sub> |G(mπ/J)|</label><strong id="h3-r-G">—</strong></div>
+    </div>
+    <div class="status" id="h3-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="derivation">
+  <div class="section-kicker">Derivation</div>
+  <h2>从方程到图：六步推导</h2>
+  <div class="steps">
+    <div class="card step"><span class="step-num">1</span><h3>分离变量</h3><p>设 u = X(x)T(t)，代入得 T′/(kT) = X″/X。左边只依赖 t、右边只依赖 x，所以两边等于同一常数 −λ：X″ + λX = 0，T′ = −λkT。</p></div>
+    <div class="card step"><span class="step-num">2</span><h3>边界决定特征值</h3><p>X(0)=X(1)=0 只允许 λ<sub>n</sub> = n²π²、X<sub>n</sub> = sin(nπx)（n=1,2,…）；绝热边界 X′(0)=X′(1)=0 给出 X<sub>n</sub> = cos(nπx)，并多出 λ<sub>0</sub>=0 的常数模态。对应 T<sub>n</sub> = e<sup>−n²π²kt</sup>。</p></div>
+    <div class="card step"><span class="step-num">3</span><h3>叠加并用正交性定系数</h3><p>线性方程允许叠加。令 t=0 与 φ 相等，两边乘 sin(mπx) 积分，由 ∫<sub>0</sub><sup>1</sup> sin(nπx)sin(mπx)dx = ½δ<sub>nm</sub> 得 b<sub>m</sub> = 2∫φ sin(mπx)dx。实验一的谱图画的就是这些数乘上衰减因子。</p></div>
+    <div class="card step"><span class="step-num">4</span><h3>直线上：卷积与热核</h3><p>在 ℝ 上没有边界、模态变成连续的傅里叶变换：û(ξ,t) = e<sup>−kξ²t</sup> φ̂(ξ)。e<sup>−kξ²t</sup> 的逆变换正是高斯 S(x,t)，乘积变卷积，得到 u = S * φ。方块初值代入后得 u = ½[erf((1−x)/√(4kt)) + erf((1+x)/√(4kt))]，实验二用的就是这个闭式。</p></div>
+    <div class="card step"><span class="step-num">5</span><h3>最大值原理</h3><p>若 u 在内部某点达到严格大于边界与初值的最大值，那里 u<sub>xx</sub> ≤ 0、u<sub>t</sub> ≥ 0；用 v = u + εx² 把不等式变严格即可得出矛盾。推论：两个解之差满足零初边值，所以恒为零——解唯一。实验二的金线（max u）随时间单调不增，正是它的体现。</p></div>
+    <div class="card step"><span class="step-num">6</span><h3>差分格式的 von Neumann 分析</h3><p>把 u<sub>j</sub><sup>n</sup> = G<sup>n</sup>e<sup>ijθ</sup> 代入 FTCS 格式，得 G = 1 − 4r sin²(θ/2)。θ=π（相邻格点正负交替的锯齿）时 G = 1−4r，|G| ≤ 1 ⇔ r ≤ ½。r ≤ ½ 时新值 = r·左 + (1−2r)·中 + r·右，三个系数非负、和为 1，所以离散最大值原理成立。</p></div>
+  </div>
+</section>
+
+<section id="symbols">
+  <div class="section-kicker">Symbols</div>
+  <h2>数学符号速查表</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>符号</th><th>读法</th><th>含义与本页取值</th></tr></thead>
+    <tbody>
+      <tr><td>u(x,t)</td><td>u of x, t</td><td>位置 x、时刻 t 的温度（无量纲）。</td></tr>
+      <tr><td>u<sub>t</sub>, u<sub>xx</sub></td><td>u 对 t 的偏导；u 对 x 的二阶偏导</td><td>温度变化率；温度曲线的弯曲程度。u<sub>xx</sub>&gt;0（下凸）处升温，&lt;0（上凸）处降温。</td></tr>
+      <tr><td>k</td><td>扩散系数</td><td>材料导热快慢，本页 0.2–2。时间与 k 只以乘积 kt 出现。</td></tr>
+      <tr><td>φ(x)</td><td>phi</td><td>初始温度 u(x,0)。</td></tr>
+      <tr><td>b<sub>n</sub>, a<sub>n</sub></td><td>正弦／余弦系数</td><td>φ 在第 n 个模态上的投影。</td></tr>
+      <tr><td>λ<sub>n</sub> = n²π²</td><td>第 n 个特征值</td><td>模态 sin(nπx) 的衰减率（再乘 k）。</td></tr>
+      <tr><td>S(z,t)</td><td>热核</td><td>均值 0、方差 2kt 的高斯密度；u = S * φ。</td></tr>
+      <tr><td>σ = √(2kt)</td><td>sigma</td><td>热核的标准差，即“热扩散了多远”。</td></tr>
+      <tr><td>erf</td><td>误差函数</td><td>erf(z) = (2/√π)∫<sub>0</sub><sup>z</sup> e<sup>−s²</sup>ds，方块初值解的闭式需要它。</td></tr>
+      <tr><td>Δx, Δt, r</td><td>步长与网格比</td><td>Δx = 1/J，r = kΔt/Δx²；显式格式稳定条件 r ≤ ½。</td></tr>
+      <tr><td>G(θ)</td><td>放大因子</td><td>频率 θ 的离散模态每走一步被乘上的数。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="limits">
+  <div class="section-kicker">Scope</div>
+  <h2>限制与小结</h2>
+  <div class="card">
+    <ul class="limit-list">
+      <li><b>精确 vs 近似：</b>级数解、热核公式和 G(θ) 是精确结论；实验一画的是 N 项部分和（系数用 4000 点中点公式计算），实验二的误差函数用相对误差 &lt;1.2×10⁻⁷ 的逼近式，实验三的“精确解”是 200 项级数。</li>
+      <li><b>t = 0 处的 Gibbs 振荡：</b>方块等含跳跃的初值，其部分和在 t=0 有约 9% 的过冲，这是傅里叶级数本身的现象，并非热方程的解。任意 t&gt;0 后振荡迅速消失。</li>
+      <li><b>“常数 1 + Dirichlet”：</b>初值与边界在端点不相容，级数在端点处收敛到 0 而不是 1；但对每个 t&gt;0，解仍光滑且满足边界条件。</li>
+      <li><b>无穷传播速度</b>是此模型（Fourier 导热定律）的数学性质；真实材料中极远处温度低于任何测量精度。读数里极小的正数仅说明 u&gt;0，其具体数值受逼近式精度限制。</li>
+      <li><b>差分稳定性</b>只演示了一维、常系数、Dirichlet 边界的 FTCS 格式；隐式格式（如 Crank–Nicolson）对任意 r 都稳定，本页未展示。</li>
+    </ul>
+    <div class="conclusion"><strong>一句话：</strong>热方程把高频成分以 e<sup>−n²π²kt</sup> 的速度抹掉——这同时解释了解的光滑化、最大值原理（不会产生新的峰），以及为什么显式格式必须用 Δt ∝ Δx² 的小步长。</div>
+  </div>
+</section>
+</main>
+<footer class="wrap footer"><p>PDE Visualization · 热方程专题。验证脚本见 <a href="source/README.md">source/</a>。</p><p><a href="../../index.html">← 返回专题目录</a></p></footer>
+
+<script id="core">
+/* HeatCore：纯数学内核（无 DOM），source/verify.cjs 直接抽取本段做数值检查 */
+const HeatCore=(()=>{
+  const PI=Math.PI;
+  // erfc：Numerical Recipes erfcc（Chebyshev 拟合，全程相对误差 < 1.2e-7）
+  function erfc(x){if(x===Infinity)return 0;if(x===-Infinity)return 2;const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r}
+  const erf=x=>1-erfc(x);
+  // erf(B)-erf(A)，两端同号时改用 erfc 相减以保留远处的极小正值
+  function erfDiff(A,B){if(A>=0&&B>=0)return erfc(A)-erfc(B);if(A<=0&&B<=0)return erfc(-B)-erfc(-A);return erf(B)-erf(A)}
+  // 有界杆 [0,1] 的初值预设
+  const presets={
+    box:x=>(x>0.3&&x<0.7)?1:0,
+    tri:x=>1-Math.abs(2*x-1),
+    two:x=>(x>0.12&&x<0.32)?1:(x>0.58&&x<0.84?-0.7:0),
+    modes:x=>Math.sin(PI*x)+0.5*Math.sin(6*PI*x),
+    const:x=>1,
+  };
+  // 系数：Dirichlet 用正弦 bₙ=2∫φ sin(nπx)；Neumann 用余弦 a₀=∫φ, aₙ=2∫φ cos(nπx)。中点公式，M 个采样
+  function coeffs(phi,N,bc,M=4000){const c=new Float64Array(N+1),h=1/M;for(let m=0;m<M;m++){const x=(m+.5)*h,v=phi(x)*h;if(bc==='neumann'){c[0]+=v;for(let n=1;n<=N;n++)c[n]+=2*v*Math.cos(n*PI*x)}else{for(let n=1;n<=N;n++)c[n]+=2*v*Math.sin(n*PI*x)}}return c}
+  const lambda=n=>(n*PI)*(n*PI);
+  function evalAt(c,bc,k,t,x){let s=bc==='neumann'?c[0]:0;for(let n=1;n<c.length;n++){const e=Math.exp(-lambda(n)*k*t);if(e<1e-18)break;s+=c[n]*e*(bc==='neumann'?Math.cos(n*PI*x):Math.sin(n*PI*x))}return s}
+  // 无穷直线：初值由若干“方块”h·1_{(a,b)} 与高斯 A e^{-x²/w²} 组成，解是精确闭式
+  const linePresets={
+    box:{boxes:[[-1,1,1]]},
+    step:{boxes:[[0,Infinity,1]]},
+    two:{boxes:[[-3,-1.6,1],[0.4,2.6,0.6]]},
+    gauss:{gauss:[[0,0.35,1]]},
+  };
+  function linePhi(P,x){let s=0;for(const[a,b,h]of P.boxes||[])if(x>a&&x<b)s+=h;for(const[x0,w,A]of P.gauss||[])s+=A*Math.exp(-(((x-x0)/w)**2));return s}
+  function lineU(P,x,t,k){if(t<=0)return linePhi(P,x);const s=Math.sqrt(4*k*t);let u=0;for(const[a,b,h]of P.boxes||[])u+=h/2*erfDiff((a-x)/s,(b-x)/s);for(const[x0,w,A]of P.gauss||[]){const q=w*w+4*k*t;u+=A*w/Math.sqrt(q)*Math.exp(-((x-x0)**2)/q)}return u}
+  const kernel=(z,t,k)=>Math.exp(-z*z/(4*k*t))/Math.sqrt(4*PI*k*t);
+  function lineMass(P){let m=0;for(const[a,b,h]of P.boxes||[]){if(!isFinite(b-a))return Infinity;m+=h*(b-a)}for(const[,w,A]of P.gauss||[])m+=A*w*Math.sqrt(PI);return m}
+  // 显式差分（FTCS）：u_j^{n+1}=u_j^n+r(u_{j+1}^n-2u_j^n+u_{j-1}^n)，两端 u=0
+  function fdStep(u,r){const J=u.length-1,v=new Float64Array(J+1);for(let j=1;j<J;j++)v[j]=u[j]+r*(u[j+1]-2*u[j]+u[j-1]);return v}
+  const G=(theta,r)=>1-4*r*Math.sin(theta/2)**2;
+  return{erf,erfc,erfDiff,presets,coeffs,lambda,evalAt,linePresets,linePhi,lineU,kernel,lineMass,fdStep,G};
+})();
+</script>
+<script>
+/* ---- 通用绘图工具（本页自带，不依赖其他文件） ---- */
+const C={bg:'#0a0e27',grid:'rgba(120,145,190,.13)',axis:'#5b6f93',tick:'#9fb0cc',text:'#dfe8f7',cyan:'#2dd4bf',pink:'#ec4899',gold:'#fbbf24',violet:'#a78bfa',blue:'#77a6ff',orange:'#fb923c',white:'#edf4ff'};
+function fit(cv){const d=window.devicePixelRatio||1,r=cv.getBoundingClientRect(),w=Math.max(40,r.width),h=Math.max(40,r.height);const W=Math.round(w*d),H=Math.round(h*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w,h}}
+function niceStep(span,n){const raw=span/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3?2:m<7?5:10)*p}
+function fmtTick(v,s){if(Math.abs(v)<s*1e-6)return'0';const dg=Math.max(0,-Math.floor(Math.log10(s)+1e-9));return v.toFixed(Math.min(dg,4))}
+/* frame: 画坐标系，返回坐标变换。opt:{x:[a,b],y:[c,d],xl,yl,pad,xt,yt,xticks,yticks,logy,logx} */
+function frame(cv,o){const{ctx,w,h}=fit(cv);const p=Object.assign({l:52,r:14,t:14,b:40},o.pad||{});ctx.fillStyle=C.bg;ctx.fillRect(0,0,w,h);const[x0,x1]=o.x,[y0,y1]=o.y;const pw=w-p.l-p.r,ph=h-p.t-p.b;const X=x=>p.l+(x-x0)/(x1-x0)*pw,Y=y=>p.t+(1-(y-y0)/(y1-y0))*ph;const IX=px=>x0+(px-p.l)/pw*(x1-x0),IY=py=>y0+(1-(py-p.t)/ph)*(y1-y0);ctx.font='12px system-ui,"Microsoft YaHei",sans-serif';ctx.lineWidth=1;
+const xt=o.xticks||(()=>{const s=niceStep(x1-x0,o.xn||7),a=[];for(let v=Math.ceil(x0/s)*s;v<=x1+1e-9;v+=s)a.push([v,o.xfmt?o.xfmt(v):fmtTick(v,s)]);return a})();const yt=o.yticks||(()=>{const s=niceStep(y1-y0,o.yn||5),a=[];for(let v=Math.ceil(y0/s)*s;v<=y1+1e-9;v+=s)a.push([v,o.yfmt?o.yfmt(v):fmtTick(v,s)]);return a})();
+ctx.strokeStyle=C.grid;ctx.fillStyle=C.tick;ctx.textAlign='center';ctx.textBaseline='top';for(const[v,l]of xt){const px=X(v);ctx.beginPath();ctx.moveTo(px,p.t);ctx.lineTo(px,p.t+ph);ctx.stroke();ctx.fillText(l,px,p.t+ph+5)}ctx.textAlign='right';ctx.textBaseline='middle';for(const[v,l]of yt){const py=Y(v);ctx.beginPath();ctx.moveTo(p.l,py);ctx.lineTo(p.l+pw,py);ctx.stroke();ctx.fillText(l,p.l-6,py)}
+ctx.strokeStyle=C.axis;ctx.strokeRect(p.l+.5,p.t+.5,pw-1,ph-1);if(o.zeroY!==false&&y0<0&&y1>0){ctx.beginPath();ctx.moveTo(p.l,Y(0));ctx.lineTo(p.l+pw,Y(0));ctx.stroke()}
+ctx.fillStyle=C.text;ctx.font='12.5px system-ui,"Microsoft YaHei",sans-serif';if(o.xl){ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(o.xl,p.l+pw-4,p.t+ph-4)}if(o.yl){ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(o.yl,p.l+6,p.t+5)}
+return{ctx,w,h,X,Y,IX,IY,p,pw,ph,clip(){ctx.save();ctx.beginPath();ctx.rect(p.l,p.t,pw,ph);ctx.clip()},unclip(){ctx.restore()}}}
+function polyline(f,xs,ys,color,width=2,dash=null,alpha=1){const c=f.ctx;c.save();c.globalAlpha=alpha;c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';if(dash)c.setLineDash(dash);c.beginPath();let pen=false;for(let i=0;i<xs.length;i++){const y=ys[i];if(!isFinite(y)){pen=false;continue}const px=f.X(xs[i]),py=f.Y(y);if(!pen){c.moveTo(px,py);pen=true}else c.lineTo(px,py)}c.stroke();c.restore()}
+function fillUnder(f,xs,ys,color,alpha=.25,base=0){const c=f.ctx;c.save();c.globalAlpha=alpha;c.fillStyle=color;c.beginPath();c.moveTo(f.X(xs[0]),f.Y(base));for(let i=0;i<xs.length;i++)c.lineTo(f.X(xs[i]),f.Y(ys[i]));c.lineTo(f.X(xs[xs.length-1]),f.Y(base));c.closePath();c.fill();c.restore()}
+function label(f,txt,x,y,color,align='left',base='bottom'){const c=f.ctx;c.save();c.font='12.5px system-ui,"Microsoft YaHei",sans-serif';c.fillStyle=color;c.textAlign=align;c.textBaseline=base;c.fillText(txt,x,y);c.restore()}
+/* 发散色标：负→蓝，零→深色，正→金橙 */
+function divColor(v){const t=Math.max(-1,Math.min(1,v)),a=Math.pow(Math.abs(t),.8);const z=[16,24,48],pos=t>=0?[251,170,60]:[90,150,255];return[z[0]+(pos[0]-z[0])*a,z[1]+(pos[1]-z[1])*a,z[2]+(pos[2]-z[2])*a]}
+/* 在 frame 的绘图区画热图：vals 为 ny 行 nx 列（第 0 行是 y 最小处） */
+function heatmap(f,vals,nx,ny,scale,cmap=divColor){const off=document.createElement('canvas');off.width=nx;off.height=ny;const oc=off.getContext('2d'),img=oc.createImageData(nx,ny);for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const c=cmap(vals[j*nx+i]/scale),k=((ny-1-j)*nx+i)*4;img.data[k]=c[0];img.data[k+1]=c[1];img.data[k+2]=c[2];img.data[k+3]=255}oc.putImageData(img,0,0);const c=f.ctx;c.save();c.imageSmoothingEnabled=true;c.drawImage(off,f.p.l,f.p.t,f.pw,f.ph);c.restore()}
+function linspace(a,b,n){const r=new Float64Array(n);for(let i=0;i<n;i++)r[i]=a+(b-a)*i/(n-1);return r}
+const fmt=(v,d=3)=>{if(!isFinite(v))return'—';const a=Math.abs(v);if(a!==0&&(a<1e-3||a>=1e5))return v.toExponential(2).replace('e','×10^').replace(/\^\+?(-?)0*(\d+)/,(m,s,n)=>'^'+s+n);return v.toFixed(d)};
+function sup(s){return s.replace(/\^(-?\d+)/g,(m,n)=>[...n].map(ch=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(ch)]||'⁻').join(''))}
+const fmtS=(v,d=3)=>sup(fmt(v,d));
+function onDrag(cv,cb){let down=false;const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);cb(...pos(e),'down')});cv.addEventListener('pointermove',e=>{if(down)cb(...pos(e),'move')});const up=e=>{if(down){down=false;cb(...pos(e),'up')}};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
+
+const $=id=>document.getElementById(id);
+const H=HeatCore;
+/* ================= 实验一 ================= */
+const E1={drawn:new Float64Array(201),playing:false,showModes:false,coef:null,phi:null,st:null,stScale:1};
+for(let i=0;i<=200;i++)E1.drawn[i]=Math.sin(Math.PI*i/200)*0.8;
+const TMAX=0.15, NX1=301, xs1=linspace(0,1,NX1);
+function drawnPhi(x){const p=Math.max(0,Math.min(1,x))*200,i=Math.min(199,Math.floor(p)),f=p-i;return E1.drawn[i]*(1-f)+E1.drawn[i+1]*f}
+function e1Params(){return{pre:$('h1-pre').value,bc:$('h1-bc').value,k:+$('h1-k').value,N:+$('h1-N').value,s:+$('h1-t').value}}
+function e1Recompute(){const P=e1Params();E1.phi=P.pre==='draw'?drawnPhi:H.presets[P.pre];E1.coef=H.coeffs(E1.phi,P.N,P.bc,P.pre==='draw'?2000:4000);
+  // 时空图：预先算好正弦/余弦表
+  const nx=220,nt=150,N=P.N,tab=new Float64Array((N+1)*nx);for(let n=0;n<=N;n++)for(let i=0;i<nx;i++){const x=i/(nx-1);tab[n*nx+i]=n===0?1:(P.bc==='neumann'?Math.cos(n*Math.PI*x):Math.sin(n*Math.PI*x))}
+  const st=new Float64Array(nx*nt);let mx=1e-9;for(let j=0;j<nt;j++){const sj=j/(nt-1),t=TMAX*sj*sj;for(let n=P.bc==='neumann'?0:1;n<=N;n++){const a=E1.coef[n]*Math.exp(-H.lambda(n)*P.k*t);if(Math.abs(a)<1e-12)continue;for(let i=0;i<nx;i++)st[j*nx+i]+=a*tab[n*nx+i]}}
+  for(let i=0;i<nx;i++)mx=Math.max(mx,Math.abs(E1.phi(i/(nx-1))));E1.st={vals:st,nx,nt};E1.stScale=mx;e1Draw()}
+function e1Draw(){const P=e1Params(),t=TMAX*P.s*P.s,c=E1.coef;$('h1-ko').textContent=P.k.toFixed(2);$('h1-No').textContent=P.N;$('h1-to').textContent=t.toFixed(4);
+  const phiv=xs1.map(E1.phi),u=xs1.map(x=>H.evalAt(c,P.bc,P.k,t,x)),u0=xs1.map(x=>H.evalAt(c,P.bc,P.k,0,x));
+  let lo=Math.min(0,...phiv),hi=Math.max(0,...phiv);if(P.pre==='draw'){lo=-1.05;hi=1.05}const pad=(hi-lo)*0.16+0.05;
+  const f=frame($('h1-u'),{x:[0,1],y:[lo-pad,hi+pad],xl:'x',yl:'u'});f.clip();
+  polyline(f,xs1,phiv,'#cbd5e1',1.6,[6,5],.75);polyline(f,xs1,u0,C.gold,1.4,null,.35);
+  if(E1.showModes){const cols=[C.cyan,C.pink,C.violet];const start=P.bc==='neumann'?0:1;for(let q=0;q<3;q++){const n=start+q;if(n>P.N)break;const a=c[n]*Math.exp(-H.lambda(n)*P.k*t);polyline(f,xs1,xs1.map(x=>n===0?a:a*(P.bc==='neumann'?Math.cos(n*Math.PI*x):Math.sin(n*Math.PI*x))),cols[q],1.5,null,.9)}}
+  polyline(f,xs1,u,C.gold,2.8);f.unclip();
+  // 谱
+  const nmax=Math.min(P.N,40),n0=P.bc==='neumann'?0:1;const g=frame($('h1-spec'),{x:[n0-0.7,nmax+0.7],y:[-8,0.6],xl:'n',yl:'log₁₀ 振幅',yfmt:v=>String(v),xn:8});const bw=Math.max(1.5,g.pw/(nmax-n0+2)*0.36);const ctx=g.ctx;let live=0;const thr=0.01*Math.max(...[...c].map(Math.abs));
+  for(let n=n0;n<=nmax;n++){const a0=Math.abs(c[n]),a=a0*Math.exp(-H.lambda(n)*P.k*t);const y0=a0>1e-8?Math.log10(a0):-8,y=a>1e-8?Math.log10(a):-8;ctx.fillStyle='#ffffff2a';ctx.fillRect(g.X(n)-bw,g.Y(y0),bw*2,g.Y(-8)-g.Y(y0));ctx.fillStyle=n===0?C.cyan:C.gold;ctx.fillRect(g.X(n)-bw*.62,g.Y(y),bw*1.24,g.Y(-8)-g.Y(y))}
+  for(let n=n0;n<=P.N;n++)if(Math.abs(c[n])*Math.exp(-H.lambda(n)*P.k*t)>=thr)live++;
+  label(g,'1% 线',g.X(nmax+0.6),g.Y(Math.log10(thr))-2,'#fbbf24aa','right');ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='#fbbf2466';ctx.beginPath();ctx.moveTo(g.p.l,g.Y(Math.log10(thr)));ctx.lineTo(g.p.l+g.pw,g.Y(Math.log10(thr)));ctx.stroke();ctx.restore();
+  // 时空图
+  const s=frame($('h1-st'),{x:[0,1],y:[0,1],xl:'x',yl:'t（平方刻度）',pad:{b:34},yticks:[0,0.001,0.005,0.01,0.02,0.05,0.1,0.15].map(v=>[Math.sqrt(v/TMAX),String(v)])});heatmap(s,E1.st.vals,E1.st.nx,E1.st.nt,E1.stScale);s.ctx.strokeStyle=C.gold;s.ctx.lineWidth=2;s.ctx.beginPath();s.ctx.moveTo(s.p.l,s.Y(P.s));s.ctx.lineTo(s.p.l+s.pw,s.Y(P.s));s.ctx.stroke();s.ctx.strokeStyle=C.axis;s.ctx.lineWidth=1;s.ctx.strokeRect(s.p.l+.5,s.p.t+.5,s.pw-1,s.ph-1);
+  // 读数
+  let mx=0,Q=0;for(let i=0;i<NX1;i++){mx=Math.max(mx,Math.abs(u[i]));Q+=(i===0||i===NX1-1?.5:1)*u[i]/(NX1-1)}
+  $('h1-r-t').textContent=t.toFixed(4);$('h1-r-max').textContent=fmt(mx,4);$('h1-r-Q').textContent=fmt(Q,4);$('h1-r-live').textContent=live+' / '+(P.N+(n0===0?1:0));
+  const tau=1/(Math.PI*Math.PI*P.k);let msg;
+  if(t===0)msg=`<b>t = 0：</b>金色淡线是初温的 ${P.N} 项部分和。${['box','two','const','draw'].includes(P.pre)?'初温有跳跃（或与边界不相容），部分和在跳跃附近出现约 9% 的 Gibbs 过冲——这是级数的现象，不是热方程造成的。':'初温连续，部分和已经贴合得很好。'}拖动时间滑块或按“播放”。`;
+  else{const n10=Math.sqrt(Math.log(100)/(Math.PI*Math.PI*P.k*t));msg=`<b>t = ${t.toFixed(4)}：</b>第 n 个模态被乘上 e<sup>−n²π²kt</sup>。此刻 n ≳ ${n10.toFixed(1)} 的模态已衰减到初始的 1% 以下，所以曲线变得光滑。最低模态的 e 折时间 1/(kπ²) = ${tau.toFixed(4)}；${P.bc==='neumann'?`绝热边界下热量出不去，总热量保持 a₀ = ${fmt(c[0],4)}，温度趋于这个平均值。`:'两端恒温 0，热量从端点流出，总热量随时间减少，u → 0。'}`}
+  $('h1-status').innerHTML=msg}
+['h1-pre','h1-bc','h1-k','h1-N'].forEach(id=>$(id).addEventListener('input',e1Recompute));$('h1-t').addEventListener('input',e1Draw);
+$('h1-modes').addEventListener('click',()=>{E1.showModes=!E1.showModes;$('h1-modes').setAttribute('aria-pressed',E1.showModes);$('h1-modeleg').hidden=!E1.showModes;e1Draw()});
+$('h1-play').addEventListener('click',()=>{E1.playing=!E1.playing;$('h1-play').textContent=E1.playing?'❚❚ 暂停':'▶ 播放';if(E1.playing&&+$('h1-t').value>=1)$('h1-t').value=0;if(E1.playing)requestAnimationFrame(e1Tick)});
+function e1Tick(){if(!E1.playing)return;let s=+$('h1-t').value+0.0025;if(s>=1){s=1;E1.playing=false;$('h1-play').textContent='▶ 播放'}$('h1-t').value=s;e1Draw();if(E1.playing)requestAnimationFrame(e1Tick)}
+let lastDraw=null;onDrag($('h1-u'),(px,py,ph)=>{if($('h1-pre').value!=='draw')return;const f=frame($('h1-u'),{x:[0,1],y:[-1.05-0.39,1.05+0.39]});const x=Math.max(0,Math.min(1,f.IX(px))),v=Math.max(-1,Math.min(1,f.IY(py)));const i=Math.round(x*200);if(ph==='down'||lastDraw===null)lastDraw=[i,v];const[i0,v0]=lastDraw;const a=Math.min(i0,i),b=Math.max(i0,i);for(let q=a;q<=b;q++)E1.drawn[q]=b===a?v:v0+(v-v0)*(q-i0)/(i-i0);lastDraw=ph==='up'?null:[i,v];$('h1-t').value=0;e1Recompute()});
+
+/* ================= 实验二 ================= */
+const E2={playing:false};const xs2=linspace(-5,5,601);
+function e2P(){return{P:H.linePresets[$('h2-pre').value],k:+$('h2-k').value,t:Math.pow(10,+$('h2-t').value),x0:+$('h2-x0').value}}
+function e2Draw(){const{P,k,t,x0}=e2P();$('h2-ko').textContent=k.toFixed(2);$('h2-to').textContent=t<0.01?t.toExponential(1):t.toFixed(3);$('h2-x0o').textContent=x0.toFixed(2);
+  const phi=xs2.map(x=>H.linePhi(P,x)),u=xs2.map(x=>H.lineU(P,x,t,k));const f=frame($('h2-u'),{x:[-5,5],y:[-0.08,1.25],xl:'x',yl:'u'});f.clip();
+  const ker=xs2.map(y=>H.kernel(x0-y,t,k)),km=Math.max(...ker);fillUnder(f,xs2,ker.map(v=>v/km*1.05),C.pink,.22);polyline(f,xs2,ker.map(v=>v/km*1.05),C.pink,1.3,null,.8);
+  polyline(f,xs2,phi,'#cbd5e1',1.6,[6,5],.75);polyline(f,xs2,u,C.gold,2.8);const ux0=H.lineU(P,x0,t,k);
+  f.ctx.strokeStyle='#2dd4bf88';f.ctx.setLineDash([3,4]);f.ctx.beginPath();f.ctx.moveTo(f.X(x0),f.p.t);f.ctx.lineTo(f.X(x0),f.p.t+f.ph);f.ctx.stroke();f.ctx.setLineDash([]);f.ctx.fillStyle=C.cyan;f.ctx.beginPath();f.ctx.arc(f.X(x0),f.Y(ux0),5.5,0,7);f.ctx.fill();
+  const sg=Math.sqrt(2*k*t);if(sg<4){const yb=f.Y(1.05*Math.exp(-0.25))-0;f.ctx.strokeStyle=C.pink;f.ctx.lineWidth=1.4;f.ctx.beginPath();f.ctx.moveTo(f.X(x0-sg),yb);f.ctx.lineTo(f.X(x0+sg),yb);f.ctx.stroke();label(f,'±σ',f.X(x0+sg)+4,yb+4,C.pink)}f.unclip();
+  // 历史曲线
+  const lts=linspace(-3,0.7,120);const mxs=[],uxs=[];for(const lt of lts){const tt=Math.pow(10,lt);let m=-1e9;for(let i=0;i<xs2.length;i+=3)m=Math.max(m,H.lineU(P,xs2[i],tt,k));mxs.push(m);uxs.push(H.lineU(P,x0,tt,k))}
+  const g=frame($('h2-hist'),{x:[-3,0.7],y:[-0.05,1.1],xl:'log₁₀ t',yl:'u'});polyline(g,lts,mxs,C.gold,2.4);polyline(g,lts,uxs,C.cyan,2.2);const lt=+$('h2-t').value;g.ctx.strokeStyle=C.pink;g.ctx.beginPath();g.ctx.moveTo(g.X(lt),g.p.t);g.ctx.lineTo(g.X(lt),g.p.t+g.ph);g.ctx.stroke();
+  let mx=-1e9;for(const v of u)mx=Math.max(mx,v);const far=H.lineU(P,5,t,k);
+  $('h2-r-s').textContent=fmt(sg,3);$('h2-r-u').textContent=fmt(ux0,4);$('h2-r-max').textContent=fmt(mx,4);$('h2-r-far').innerHTML=far>0?fmtS(far):'0（低于 10⁻³⁰⁰）';
+  const mass=H.lineMass(P);$('h2-status').innerHTML=`<b>读图：</b>粉色钟形是热核 S(x₀−y,t)，它把初温加权平均成 u(x₀,t) = ${fmt(ux0,4)}。钟形宽度 σ = √(2kt) = ${fmt(sg,3)}，随 √t 变宽——热扩散的距离与时间的平方根成正比。金线 max u 随时间单调不增（最大值原理）。${isFinite(mass)?`总热量 ∫u dx 守恒，始终为 ${fmt(mass,4)}。`:'阶跃初值的总热量无穷，但 u 始终介于 0 与 1 之间。'}远处 x = 5 的温度此刻为 ${far>0?fmtS(far):'0'}：数值也许极小，但只要 t&gt;0 就严格为正。`}
+['h2-pre','h2-k','h2-t','h2-x0'].forEach(id=>$(id).addEventListener('input',e2Draw));
+onDrag($('h2-u'),(px)=>{const f=frame($('h2-u'),{x:[-5,5],y:[0,1]});$('h2-x0').value=Math.max(-5,Math.min(5,f.IX(px)));e2Draw()});
+$('h2-play').addEventListener('click',()=>{E2.playing=!E2.playing;$('h2-play').textContent=E2.playing?'❚❚ 暂停':'▶ 播放';if(E2.playing&&+$('h2-t').value>=0.69)$('h2-t').value=-3;if(E2.playing)requestAnimationFrame(e2Tick)});
+function e2Tick(){if(!E2.playing)return;let v=+$('h2-t').value+0.008;if(v>=0.7){v=0.7;E2.playing=false;$('h2-play').textContent='▶ 播放'}$('h2-t').value=v;e2Draw();if(E2.playing)requestAnimationFrame(e2Tick)}
+
+/* ================= 实验三 ================= */
+const E3={u:null,n:0,playing:false,exactC:null};
+const fdInit={tri:x=>1-Math.abs(2*x-1),box:x=>(x>0.3&&x<0.7)?1:((Math.abs(x-0.3)<1e-12||Math.abs(x-0.7)<1e-12)?0.5:0),sin:x=>Math.sin(Math.PI*x)};
+function e3Reset(){const J=+$('h3-J').value,f=fdInit[$('h3-pre').value];E3.u=new Float64Array(J+1);for(let j=1;j<J;j++)E3.u[j]=f(j/J);E3.n=0;E3.exactC=H.coeffs(f,200,'dirichlet',8000);e3Draw()}
+function e3Draw(){const r=+$('h3-r').value,J=+$('h3-J').value,dx=1/J,dt=r*dx*dx,t=E3.n*dt;$('h3-ro').textContent=r.toFixed(2);
+  const f0=fdInit[$('h3-pre').value],exF=x=>E3.n===0?f0(x):H.evalAt(E3.exactC,'dirichlet',1,t,x);const xs=linspace(0,1,301),ex=xs.map(exF);const f=frame($('h3-u'),{x:[0,1],y:[-0.35,1.25],xl:'x',yl:'u'});f.clip();polyline(f,xs,ex,C.cyan,2.4);
+  const ctx=f.ctx;ctx.strokeStyle='#fbbf2499';ctx.lineWidth=1.2;ctx.beginPath();let err=0,out=false;for(let j=0;j<=J;j++){const v=E3.u[j];err=Math.max(err,Math.abs(v-exF(j/J)));const vc=Math.max(-0.4,Math.min(1.3,v));if(vc!==v)out=true;j?ctx.lineTo(f.X(j/J),f.Y(vc)):ctx.moveTo(f.X(0),f.Y(vc))}ctx.stroke();ctx.fillStyle=C.gold;for(let j=0;j<=J;j++){const v=Math.max(-0.4,Math.min(1.3,E3.u[j]));ctx.beginPath();ctx.arc(f.X(j/J),f.Y(v),J>40?2.4:3.4,0,7);ctx.fill()}f.unclip();if(out)label(f,'⚠ 数值解已超出画面',f.p.l+f.pw-8,f.p.t+22,C.pink,'right','top');
+  const th=linspace(0,Math.PI,300),g=frame($('h3-G'),{x:[0,Math.PI],y:[-2.1,1.15],xl:'θ',yl:'G',xticks:[[0,'0'],[Math.PI/4,'π/4'],[Math.PI/2,'π/2'],[3*Math.PI/4,'3π/4'],[Math.PI,'π']]});g.ctx.fillStyle='#2dd4bf1f';g.ctx.fillRect(g.p.l,g.Y(1),g.pw,g.Y(-1)-g.Y(1));polyline(g,th,th.map(q=>H.G(q,r)),C.gold,2.6);let gm=0;
+  for(let m=1;m<J;m++){const q=m*Math.PI/J,v=H.G(q,r);gm=Math.max(gm,Math.abs(v));g.ctx.fillStyle=Math.abs(v)>1+1e-12?C.pink:'#cbd5e188';g.ctx.beginPath();g.ctx.arc(g.X(q),g.Y(v),J>40?2:3,0,7);g.ctx.fill()}label(g,'G = −1',g.X(0.05),g.Y(-1)-2,'#2dd4bfcc');
+  $('h3-r-n').textContent=`${E3.n} / ${t.toFixed(4)}`;$('h3-r-dt').textContent=fmtS(dt);$('h3-r-err').innerHTML=fmtS(err);$('h3-r-G').textContent=gm.toFixed(4);
+  const st=$('h3-status');if(r<=0.5){st.className='status';st.innerHTML=`<b>稳定（r = ${r.toFixed(2)} ≤ ½）：</b>所有网格模态 |G| ≤ 1。新值 = ${r.toFixed(2)}·左 + ${(1-2*r).toFixed(2)}·中 + ${r.toFixed(2)}·右，权重非负，离散最大值原理成立。剩下的误差来自截断：O(Δt + Δx²)。`}
+  else{const grow=Math.abs(1-4*r),nb=Math.log(1e16)/Math.log(gm);st.className='status warn';st.innerHTML=`<b>不稳定（r = ${r.toFixed(2)} &gt; ½）：</b>最高频的锯齿模态 θ ≈ π 的放大因子约为 1−4r = ${(1-4*r).toFixed(2)}，每步被放大约 ${grow.toFixed(2)} 倍并且正负交替。${$('h3-pre').value==='sin'?`sin πx 初值几乎不含这一模态，只有 ~10⁻¹⁶ 的舍入误差；约 ${Math.ceil(nb)} 步后它才长到 O(1)。`:'初值本身就含这一模态，锯齿很快出现。'}中间权重 1−2r = ${(1-2*r).toFixed(2)} &lt; 0，凸组合被破坏。`}}
+function e3Advance(m){const r=+$('h3-r').value;for(let i=0;i<m;i++){E3.u=H.fdStep(E3.u,r);E3.n++;if(!isFinite(E3.u[1])||Math.abs(E3.u[Math.floor(E3.u.length/2)])>1e12){E3.playing=false;$('h3-play').textContent='▶ 播放';break}}e3Draw()}
+['h3-r','h3-J','h3-pre'].forEach(id=>$(id).addEventListener('input',e3Reset));$('h3-reset').addEventListener('click',e3Reset);$('h3-step').addEventListener('click',()=>e3Advance(1));
+$('h3-play').addEventListener('click',()=>{E3.playing=!E3.playing;$('h3-play').textContent=E3.playing?'❚❚ 暂停':'▶ 播放';if(E3.playing)requestAnimationFrame(e3Tick)});
+function e3Tick(){if(!E3.playing)return;const J=+$('h3-J').value;e3Advance(Math.max(1,Math.round(J/20)));const r=+$('h3-r').value;if(E3.n*r/(J*J)>0.25){E3.playing=false;$('h3-play').textContent='▶ 播放'}if(E3.playing)requestAnimationFrame(e3Tick)}
+
+function all(){e1Recompute();e2Draw();e3Reset()}
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{e1Draw();e2Draw();e3Draw()},120)});
+all();
+</script>
+</body>
+</html>

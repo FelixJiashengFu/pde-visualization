@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="一维波动方程交互可视化：d'Alembert 行波分解、特征线与依赖域、有限弦端点反射与能量守恒。">
+<title>波动方程｜d'Alembert 公式与特征线</title>
+<style>
+:root{--bg:#0b1020;--canvas:#0a0e27;--panel:rgba(22,31,57,.79);--line:#344462;--text:#edf4ff;--muted:#aebbd4;--soft:#cbd5e1;--cyan:#2dd4bf;--pink:#ec4899;--gold:#fbbf24;--violet:#a78bfa;--blue:#77a6ff;--orange:#fb923c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% -12%,#25365b 0,transparent 34%),radial-gradient(circle at 90% 4%,#1b1741 0,transparent 28%),var(--bg);color:var(--text);font:16px/1.62 system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+a{color:#9cc7ff}a:hover{color:#c8ddff}.wrap{width:min(1220px,calc(100% - 32px));margin:auto}.hero{padding:55px 0 32px}.eyebrow{color:var(--gold);font-weight:750;letter-spacing:.16em;font-size:.76rem;text-transform:uppercase}.hero h1{font-size:clamp(2rem,4.8vw,3.6rem);line-height:1.12;letter-spacing:-.035em;margin:12px 0}.hero p{max-width:820px;color:var(--soft);font-size:1.07rem;margin:0}.hero .sub{margin-top:12px;color:var(--muted);font-size:.92rem}.nav{display:flex;flex-wrap:wrap;gap:8px;margin:25px 0 0}.nav a{text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#121c34;color:var(--soft);font-size:.86rem}.nav a:hover{border-color:var(--cyan)}
+main{padding-bottom:60px}section{margin:24px 0 48px}h2{font-size:1.55rem;margin:0 0 16px;letter-spacing:-.015em}.section-kicker{font-size:.77rem;letter-spacing:.11em;color:var(--violet);font-weight:800;text-transform:uppercase;margin-bottom:3px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:var(--panel);border:1px solid rgba(131,155,197,.23);border-radius:18px;padding:22px;box-shadow:0 12px 35px rgba(1,6,20,.17)}.card h3{margin:0 0 10px;font-size:1.1rem}.card p{margin:8px 0;color:var(--soft)}.tag{display:inline-block;border:1px solid var(--line);background:#111a31;border-radius:999px;padding:2px 10px;color:var(--muted);font-size:.78rem}.conclusion{border-left:4px solid var(--gold);padding:16px 20px;background:linear-gradient(90deg,rgba(251,191,36,.12),rgba(251,191,36,.035));border-radius:0 15px 15px 0;margin-top:16px;color:var(--soft)}.conclusion strong{color:#ffe49b}
+.eq{overflow-x:auto;padding:13px 16px;background:#0a1429;border:1px solid rgba(110,135,187,.22);border-radius:10px;color:#f4f8ff;margin:11px 0 0;text-align:center;font-family:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;font-size:1.12rem;white-space:nowrap}.eq i{font-style:italic}.eq .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}.eq .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}.eq .frac>span{font-size:.88em;line-height:1.25}.eq .big{font-size:1.5em;vertical-align:-.12em}.symbol-note{font-size:.84rem;line-height:1.55;color:var(--muted);padding:7px 3px 0;margin:0 0 6px}.symbol-note b{color:var(--soft);font-weight:650}code{background:#101a31;border:1px solid #263955;border-radius:5px;padding:0 4px;font-size:.88em}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:14px}.control{min-width:120px;flex:1 1 130px}.control.sel{flex:1 1 230px}.control label{display:block;font-size:.8rem;color:var(--muted);font-weight:650;margin-bottom:5px}.control label output{color:var(--gold);font-weight:800;margin-left:4px}.control input,.control select{width:100%;background:#111b34;color:var(--text);border:1px solid #52647f;border-radius:9px;padding:9px 10px;font:inherit;min-height:42px}.control input:focus-visible,.control select:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.control.range{flex:2 1 180px}.control.range input{padding:0;border:0;background:transparent;height:42px;accent-color:var(--violet)}button{font:inherit;min-height:42px;border:1px solid #cc9b27;background:#dcae3d;color:#101526;border-radius:9px;padding:7px 15px;font-weight:800;cursor:pointer}button:hover{background:#f2c757}button.ghost{background:#111b34;color:var(--soft);border-color:#52647f}button.ghost:hover{border-color:var(--gold);background:#16223f}.btns{display:flex;gap:8px;flex-wrap:wrap}.hint{font-size:.8rem;color:var(--muted);width:100%;margin:-2px 0 0}
+.viz-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}.viz-card{padding:15px 15px 12px;min-width:0}.viz-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 10px;flex-wrap:wrap}.viz-title h3{margin:0;font-size:1rem}.viz-title span{font-size:.8rem;color:var(--muted)}canvas.plot{display:block;width:100%;height:360px;background:var(--canvas);border-radius:12px;border:1px solid #263958;touch-action:none}canvas.plot.tall{height:420px}canvas.plot.short{height:260px}.legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:10px 3px 2px;color:var(--soft);font-size:.82rem}.swatch{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}.swatch.dash{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)!important}.swatch.box{height:11px;width:11px;vertical-align:-1px}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}.metric{background:#101a31;border:1px solid #263955;padding:10px 13px;border-radius:12px;min-width:0}.metric label{display:block;color:var(--muted);font-size:.76rem}.metric strong{display:block;font-size:1.02rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.status{margin-top:13px;padding:12px 15px;border-radius:12px;background:#0f1c33;border:1px solid #2b4466;color:var(--soft);font-size:.9rem}.status b{color:var(--gold)}.status.warn{border-color:#8b3a55;background:#2a1224}.caption{font-size:.86rem;color:var(--muted);margin:12px 3px 0}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.step{padding:19px}.step-num{display:inline-flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%;background:#2b2350;color:#d2c2ff;font-size:.83rem;font-weight:800;margin-right:8px}.step h3{display:inline;font-size:1.03rem}.step p{color:var(--soft);margin:8px 0 0}.wide-step{grid-column:1/-1}.table-wrap{overflow-x:auto;border:1px solid rgba(131,155,197,.25);border-radius:13px;background:#121c34}table{border-collapse:collapse;width:100%;min-width:560px}th,td{text-align:left;padding:10px 13px;border-bottom:1px solid #2b3b58;vertical-align:top}th{font-size:.83rem;color:#b9ceef;background:#17253e}td{font-size:.88rem;color:var(--soft)}tr:last-child td{border-bottom:0}td:first-child{font-family:"Cambria Math","Times New Roman",serif;font-size:1rem;color:var(--text);white-space:nowrap}.limit-list{padding-left:20px;color:var(--soft)}.limit-list li{margin:7px 0}.footer{color:var(--muted);font-size:.82rem;border-top:1px solid #2a3852;padding:24px 0 40px}.footer p{margin:5px 0}
+.grid2>*,.grid3>*,.steps>*,.viz-grid>*{min-width:0}.eq{max-width:100%}
+@media(max-width:880px){.btns{flex-wrap:wrap}.card{padding:16px}.viz-card{padding:10px}.grid2,.grid3,.viz-grid,.steps{grid-template-columns:1fr}.wide-step{grid-column:auto}.readout{grid-template-columns:repeat(2,minmax(0,1fr))}canvas.plot{height:300px}canvas.plot.tall{height:340px}.hero{padding:38px 0 22px}}
+</style>
+</head>
+<body>
+<header class="wrap hero">
+  <div class="eyebrow">Wave equation · 双曲型 · 波动与振动</div>
+  <h1>波动方程：<br>d'Alembert 公式与特征线</h1>
+  <p>一维波动方程 u<sub>tt</sub> = c²u<sub>xx</sub> 的解可以完全写出来：两列形状不变、以速度 c 反向奔跑的行波之和。本页把这件事拆开看——行波分解、特征线上的依赖域与影响域，以及有限弦端点处的“镜像反射”和能量守恒。</p>
+  <p class="sub">全部图形在浏览器内由精确公式实时计算，单文件、可离线打开。长度、时间、位移都是无量纲教学单位。</p>
+  <nav class="nav" aria-label="页内导航">
+    <a href="#problem">方程与结论</a><a href="#exp1">实验一 · 行波分解</a><a href="#exp2">实验二 · 特征线</a><a href="#exp3">实验三 · 反射与能量</a><a href="#derivation">推导</a><a href="#symbols">符号表</a><a href="#limits">限制</a><a href="../../index.html">← 专题目录</a>
+  </nav>
+</header>
+<main class="wrap">
+<section id="problem">
+  <div class="section-kicker">Problem</div>
+  <h2>方程、初值条件与三条结论</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>无界弦的 Cauchy 问题</h3>
+      <div class="eq">u<sub>tt</sub> = c² u<sub>xx</sub>,&nbsp; x ∈ ℝ, t&gt;0;&nbsp;&nbsp; u(x,0)=φ(x),&nbsp; u<sub>t</sub>(x,0)=ψ(x)</div>
+      <p class="symbol-note"><b>u(x,t)</b> 是弦在位置 x、时刻 t 的横向位移；<b>c&gt;0</b> 是波速；<b>φ</b> 是初始形状，<b>ψ</b> 是初始速度（比如用锤子敲一下给的冲量）。需要两个初值，因为方程对 t 是二阶的。</p>
+      <div class="eq">u(x,t) = ½[φ(x−ct) + φ(x+ct)] + <span class="frac"><span>1</span><span>2c</span></span>∫<sub>x−ct</sub><sup>x+ct</sup> ψ(s) ds</div>
+      <p class="symbol-note">这就是 <b>d'Alembert 公式</b>。φ(x−ct) 是把 φ 的图像整体向右平移 ct，φ(x+ct) 向左平移 ct。</p>
+    </div>
+    <div class="card">
+      <h3>三条结论</h3>
+      <div class="conclusion"><strong>结论 1（行波分解）：</strong>初始形状一分为二，各带一半高度，分别以速度 c 向左右跑，形状保持不变。</div>
+      <div class="conclusion"><strong>结论 2（有限传播速度）：</strong>u(x₀,t₀) 只依赖区间 [x₀−ct₀, x₀+ct₀] 上的初值——这是 (x₀,t₀) 的<b>依赖域</b>，由两条<b>特征线</b> x ± ct = 常数 围成。与热方程的“无穷传播速度”形成对照。</div>
+      <div class="conclusion"><strong>结论 3（能量守恒与反射）：</strong>E(t) = ½∫(u<sub>t</sub>² + c²u<sub>x</sub>²)dx 不随时间变化。在固定端（u=0），脉冲反射后上下翻转；在自由端（u<sub>x</sub>=0），反射后不翻转。</div>
+    </div>
+  </div>
+</section>
+
+<section id="exp1">
+  <div class="section-kicker">Experiment 1</div>
+  <h2>实验一：一分为二的行波</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control sel"><label for="w1-phi">初始形状 φ(x)</label><select id="w1-phi"><option value="gauss">高斯 e^(−x²/0.5²)</option><option value="box">方块 |x|&lt;0.7（有跳跃）</option><option value="tri">三角形（有尖角）</option><option value="none">无（φ = 0）</option></select></div>
+      <div class="control sel"><label for="w1-psi">初始速度 ψ(x)</label><select id="w1-psi"><option value="none">无（ψ = 0）</option><option value="gauss">高斯冲量 e^(−x²/0.5²)</option><option value="box">方块冲量 |x|&lt;0.7</option></select></div>
+      <div class="control range"><label for="w1-c">波速 c <output id="w1-co">1.00</output></label><input id="w1-c" type="range" min="0.5" max="2" step="0.05" value="1"></div>
+      <div class="control range"><label for="w1-t">时间 t <output id="w1-to">0.00</output></label><input id="w1-t" type="range" min="0" max="4" step="0.01" value="1.2"></div>
+      <div class="btns"><button id="w1-play">▶ 播放</button></div>
+      <p class="hint">实验一与实验二共用这组初值和波速。试试只给初速度（φ = 0，ψ = 高斯）：弦被“敲”起后会留下一段永久抬高的平台。</p>
+    </div>
+    <div class="viz-card card">
+      <div class="viz-title"><h3>弦的位移与三个组成部分</h3><span>横轴 x ∈ [−6,6]，纵轴位移 u</span></div>
+      <canvas id="w1-u" class="plot" role="img" aria-label="d'Alembert 解及其右行、左行、速度三部分"></canvas>
+      <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>u(x,t) = 三者之和</span><span style="color:var(--cyan)"><i class="swatch dash"></i>右行波 ½φ(x−ct)</span><span style="color:var(--pink)"><i class="swatch dash"></i>左行波 ½φ(x+ct)</span><span style="color:var(--violet)"><i class="swatch dash"></i>速度项 (1/2c)∫ψ</span><span style="color:#cbd5e1"><i class="swatch dash"></i>初始形状 φ</span></div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>时刻 t</label><strong id="w1-r-t">—</strong></div>
+      <div class="metric"><label>两波包中心 ±ct</label><strong id="w1-r-ct">—</strong></div>
+      <div class="metric"><label>max u(·,t)</label><strong id="w1-r-max">—</strong></div>
+      <div class="metric"><label>位移积分 ∫u dx</label><strong id="w1-r-int">—</strong></div>
+    </div>
+    <div class="status" id="w1-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="exp2">
+  <div class="section-kicker">Experiment 2</div>
+  <h2>实验二：特征线、依赖域与影响域</h2>
+  <div class="card">
+    <p class="caption" style="margin-top:0">在左图任意位置点击（或拖动）选择时空点 (x₀, t₀)。初值与波速沿用实验一的设置。</p>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>x–t 平面上的 u(x,t)</h3><span>横轴 x，纵轴 t（向上）；橙 = 正位移，蓝 = 负位移</span></div>
+        <canvas id="w2-xt" class="plot tall" role="img" aria-label="x-t 平面热图，叠加特征线与依赖域三角形"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--cyan)"></i>过 (x₀,t₀) 的特征线 x ± ct = 常数</span><span><i class="swatch box" style="background:#2dd4bf40"></i>依赖域</span><span style="color:#cbd5e1"><i class="swatch dash"></i>初值支集的影响域边界</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>t = 0 上：u(x₀,t₀) 用到了哪些初值</h3><span>横轴 x</span></div>
+        <canvas id="w2-init" class="plot tall" role="img" aria-label="初值与依赖区间"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>φ(x)</span><span><i class="swatch" style="background:var(--violet)"></i>ψ(x)</span><span><i class="swatch box" style="background:#2dd4bf40"></i>依赖区间 [x₀−ct₀, x₀+ct₀]</span><span><i class="swatch box" style="background:var(--cyan);border-radius:50%"></i>两个端点：只有这里的 φ 被用到</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>(x₀, t₀)</label><strong id="w2-r-pt">—</strong></div>
+      <div class="metric"><label>½φ(x₀−ct₀) + ½φ(x₀+ct₀)</label><strong id="w2-r-phi">—</strong></div>
+      <div class="metric"><label>(1/2c)∫ψ over 依赖区间</label><strong id="w2-r-psi">—</strong></div>
+      <div class="metric"><label>u(x₀, t₀) = 两者之和</label><strong id="w2-r-u">—</strong></div>
+    </div>
+    <div class="status" id="w2-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="exp3">
+  <div class="section-kicker">Experiment 3</div>
+  <h2>实验三：有限弦——镜像反射与能量守恒</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control sel"><label for="w3-bc">端点条件</label><select id="w3-bc"><option value="fixed">两端固定 u = 0（奇延拓）</option><option value="free">两端自由 uₓ = 0（偶延拓）</option></select></div>
+      <div class="control sel"><label for="w3-kind">激发方式</label><select id="w3-kind"><option value="disp">拨弦：初始位移脉冲</option><option value="vel">击弦：初始速度冲量</option></select></div>
+      <div class="control range"><label for="w3-p">脉冲位置 p <output id="w3-po">1.20</output></label><input id="w3-p" type="range" min="0.8" max="3.2" step="0.05" value="1.2"></div>
+      <div class="control range"><label for="w3-w">脉冲宽度 w <output id="w3-wo">0.30</output></label><input id="w3-w" type="range" min="0.12" max="0.4" step="0.01" value="0.3"></div>
+      <div class="control range"><label for="w3-t">时间 t <output id="w3-to">0.00</output></label><input id="w3-t" type="range" min="0" max="16" step="0.01" value="2.6"></div>
+      <div class="btns"><button id="w3-play">▶ 播放</button><button class="ghost" id="w3-ghost" aria-pressed="true">隐藏镜像</button></div>
+      <p class="hint">弦长 L = 4，波速 c = 1。灰色区域是弦外的“镜像世界”：把初值按奇（固定端）或偶（自由端）方式延拓成 2L 周期函数，再对整条直线用 d'Alembert 公式，限制回 [0, L] 就是有限弦的解。</p>
+    </div>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>弦 [0, L] 与延拓出的镜像</h3><span>横轴 x ∈ [−4, 8]，纵轴位移</span></div>
+        <canvas id="w3-u" class="plot" role="img" aria-label="有限弦的位移与镜像延拓"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>弦上的 u(x,t)</span><span><i class="swatch" style="background:#cbd5e1;opacity:.5"></i>镜像（延拓解）</span><span><i class="swatch" style="background:var(--cyan)"></i>端点</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>能量随时间</h3><span>横轴 t，纵轴能量</span></div>
+        <canvas id="w3-E" class="plot" role="img" aria-label="动能、势能与总能量随时间"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>总能量 E</span><span><i class="swatch" style="background:var(--pink)"></i>动能 ½∫u<sub>t</sub>²</span><span><i class="swatch" style="background:var(--cyan)"></i>势能 ½∫c²u<sub>x</sub>²</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>时刻 t / 周期 2L/c</label><strong id="w3-r-t">—</strong></div>
+      <div class="metric"><label>总能量 E(t)</label><strong id="w3-r-E">—</strong></div>
+      <div class="metric"><label>|E(t) − E(0)| / E(0)</label><strong id="w3-r-dE">—</strong></div>
+      <div class="metric"><label>左端 u(0,t) / 右端 u(L,t)</label><strong id="w3-r-end">—</strong></div>
+    </div>
+    <div class="status" id="w3-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="derivation">
+  <div class="section-kicker">Derivation</div>
+  <h2>从方程到图：六步推导</h2>
+  <div class="steps">
+    <div class="card step"><span class="step-num">1</span><h3>算子分解</h3><p>u<sub>tt</sub> − c²u<sub>xx</sub> = (∂<sub>t</sub> − c∂<sub>x</sub>)(∂<sub>t</sub> + c∂<sub>x</sub>)u = 0。每个一阶因子都是沿某个方向的方向导数。</p></div>
+    <div class="card step"><span class="step-num">2</span><h3>特征坐标</h3><p>令 ξ = x + ct、η = x − ct，方程变为 u<sub>ξη</sub> = 0，所以 u = F(ξ) + G(η) = F(x+ct) + G(x−ct)：一列左行波加一列右行波。直线 ξ = 常数、η = 常数 就是<b>特征线</b>。</p></div>
+    <div class="card step"><span class="step-num">3</span><h3>用初值定 F、G</h3><p>t=0：F + G = φ，c(F′ − G′) = ψ。积分第二式得 F − G = (1/c)∫<sub>0</sub><sup>x</sup>ψ + 常数，与第一式联立解出 F、G，代回即得 d'Alembert 公式。</p></div>
+    <div class="card step"><span class="step-num">4</span><h3>依赖域与影响域</h3><p>公式中只出现 φ 在 x₀ ± ct₀ 两点的值和 ψ 在 [x₀−ct₀, x₀+ct₀] 上的积分，所以 u(x₀,t₀) 不受区间外初值影响。反过来，初值支集 [a,b] 只能影响 a − ct ≤ x ≤ b + ct 的楔形区域。φ 的跳跃或尖角沿特征线原样传播，不会被抹平——这与热方程截然不同。</p></div>
+    <div class="card step"><span class="step-num">5</span><h3>端点反射 = 镜像</h3><p>固定端 u(0,t)=0：把 φ、ψ 奇延拓到 x&lt;0，d'Alembert 解自动满足 u(0,t)=½[φ(−ct)+φ(ct)]+… = 0。两端都固定则做 2L 周期奇延拓。自由端 u<sub>x</sub>=0 对应偶延拓。镜像脉冲穿过端点进入弦内，看起来就是“反射”；奇延拓带负号，所以反射后翻转。</p></div>
+    <div class="card step"><span class="step-num">6</span><h3>能量守恒</h3><p>方程两边乘 u<sub>t</sub>：(½u<sub>t</sub>² + ½c²u<sub>x</sub>²)<sub>t</sub> = (c²u<sub>t</sub>u<sub>x</sub>)<sub>x</sub>。在 [0,L] 上积分，右边只剩边界项 c²u<sub>t</sub>u<sub>x</sub>|<sub>0</sub><sup>L</sup>；固定端 u<sub>t</sub>=0、自由端 u<sub>x</sub>=0，都让它为零，所以 dE/dt = 0。能量守恒还推出解的唯一性。</p></div>
+  </div>
+</section>
+
+<section id="symbols">
+  <div class="section-kicker">Symbols</div>
+  <h2>数学符号速查表</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>符号</th><th>读法</th><th>含义与本页取值</th></tr></thead>
+    <tbody>
+      <tr><td>u(x,t)</td><td>u of x, t</td><td>弦的横向位移（无量纲）。</td></tr>
+      <tr><td>u<sub>tt</sub>, u<sub>xx</sub></td><td>对 t、对 x 的二阶偏导</td><td>加速度；弦的弯曲程度。方程说：加速度正比于弯曲。</td></tr>
+      <tr><td>c</td><td>波速</td><td>c² = 张力 / 线密度。实验一、二 0.5–2，实验三固定为 1。</td></tr>
+      <tr><td>φ, ψ</td><td>phi, psi</td><td>初始位移、初始速度。</td></tr>
+      <tr><td>x ± ct</td><td>特征变量</td><td>沿直线 x + ct = 常数 左行波不变；沿 x − ct = 常数 右行波不变。</td></tr>
+      <tr><td>[x₀−ct₀, x₀+ct₀]</td><td>依赖区间</td><td>决定 u(x₀,t₀) 的全部初值所在区间。</td></tr>
+      <tr><td>E(t)</td><td>能量</td><td>½∫(u<sub>t</sub>² + c²u<sub>x</sub>²)dx：动能 + 弹性势能。</td></tr>
+      <tr><td>L, 2L/c</td><td>弦长、周期</td><td>实验三 L = 4；两端固定或两端自由时，解是周期 2L/c 的函数。</td></tr>
+      <tr><td>p, w</td><td>脉冲位置、宽度</td><td>实验三初值为 e<sup>−((x−p)/w)²</sup> 的镜像和。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="limits">
+  <div class="section-kicker">Scope</div>
+  <h2>限制与小结</h2>
+  <div class="card">
+    <ul class="limit-list">
+      <li><b>精确 vs 近似：</b>所有曲线都由 d'Alembert 公式逐点精确计算；高斯冲量的原函数用误差函数（逼近式相对误差 &lt;1.2×10⁻⁷）。能量积分用 800 点中点公式，读数里 10⁻¹⁰ 量级以下的漂移是数值积分误差。</li>
+      <li><b>方块、三角初值</b>不是经典 C² 解：d'Alembert 公式给出的是弱解（广义解），跳跃和尖角沿特征线传播。实验三只用光滑高斯脉冲，因为跳跃初值的能量为无穷大。</li>
+      <li><b>实验三的初值</b>是高斯脉冲的镜像和，它在端点处严格满足边界条件；在 [0,L] 内与单个高斯的差别小于 e<sup>−(0.8/0.4)²</sup> ≈ 0.018（最坏参数）而通常远小于此。</li>
+      <li><b>自由端 + 速度冲量：</b>两端自由时总动量守恒且不为零，弦会整体漂移（u 的平均值线性增长），这是模型的正确行为，不是数值误差。</li>
+      <li>本页只讨论一维、常系数、无阻尼的情形。带摩擦的弦见本库的“受摩擦阻尼的弦”专题；高维波动方程的 Huygens 原理（三维中依赖域只是球面）本页未涉及。</li>
+    </ul>
+    <div class="conclusion"><strong>一句话：</strong>波动方程的一切都写在两族特征线 x ± ct = 常数 上：信息沿它们以有限速度 c 传播、奇点沿它们原样传播、边界处靠镜像折回，而能量始终守恒。</div>
+  </div>
+</section>
+</main>
+<footer class="wrap footer"><p>PDE Visualization · 波动方程 d'Alembert 专题。验证脚本见 <a href="source/README.md">source/</a>。</p><p><a href="../../index.html">← 返回专题目录</a></p></footer>
+
+<script id="core">
+/* WaveCore：纯数学内核（无 DOM），source/verify.cjs 直接抽取本段做数值检查 */
+const WaveCore=(()=>{
+  const SQPI=Math.sqrt(Math.PI);
+  function erf(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?1-r:r-1}
+  // 无界弦的初值：f 为函数，F 为 ψ 的一个原函数（d'Alembert 公式需要 ∫ψ）
+  const W=0.5,B=0.7,T=0.8;
+  const phiPresets={
+    gauss:{f:x=>Math.exp(-((x/W)**2)),supp:[-1.5,1.5]},
+    box:{f:x=>Math.abs(x)<B?1:0,supp:[-B,B]},
+    tri:{f:x=>Math.max(0,1-Math.abs(x)/T),supp:[-T,T]},
+    none:{f:x=>0,supp:null},
+  };
+  const psiPresets={
+    none:{f:x=>0,F:x=>0,supp:null},
+    gauss:{f:x=>Math.exp(-((x/W)**2)),F:x=>W*SQPI/2*erf(x/W),supp:[-1.5,1.5]},
+    box:{f:x=>Math.abs(x)<B?1:0,F:x=>Math.max(-B,Math.min(B,x)),supp:[-B,B]},
+  };
+  // d'Alembert：u = ½[φ(x−ct)+φ(x+ct)] + (1/2c)[Ψ(x+ct)−Ψ(x−ct)]
+  function parts(phi,psi,c,x,t){const R=0.5*phi.f(x-c*t),L=0.5*phi.f(x+c*t),V=(psi.F(x+c*t)-psi.F(x-c*t))/(2*c);return{R,L,V,u:R+L+V}}
+  const u=(phi,psi,c,x,t)=>parts(phi,psi,c,x,t).u;
+  // 有限弦 [0,Lw]：高斯脉冲的奇（固定端）/偶（自由端）2L 周期延拓，用镜像和精确表示
+  function finite(o){const{Lw,p,w,A,kind,bc,c}=o,sg=bc==='fixed'?-1:1,K=12;
+    const g=x=>Math.exp(-((x/w)**2)),dg=x=>-2*x/(w*w)*Math.exp(-((x/w)**2)),Gi=x=>w*SQPI/2*erf(x/w);
+    const img=(h,x)=>{let s=0;for(let k=-K;k<=K;k++){const sh=2*k*Lw;s+=h(x-p-sh)+sg*h(x+p-sh)}return s};
+    const ap=kind==='disp'?A:0,av=kind==='vel'?A:0;
+    const phi=x=>ap*img(g,x),psi=x=>av*img(g,x),Psi=x=>av*img(Gi,x);
+    const dphi=x=>{let s=0;for(let k=-K;k<=K;k++){const sh=2*k*Lw;s+=dg(x-p-sh)+sg*dg(x+p-sh)}return ap*s};
+    const U=(x,t)=>0.5*(phi(x-c*t)+phi(x+c*t))+(Psi(x+c*t)-Psi(x-c*t))/(2*c);
+    const Ut=(x,t)=>0.5*c*(dphi(x+c*t)-dphi(x-c*t))+0.5*(psi(x+c*t)+psi(x-c*t));
+    const Ux=(x,t)=>0.5*(dphi(x-c*t)+dphi(x+c*t))+(psi(x+c*t)-psi(x-c*t))/(2*c);
+    function energy(t,M=800){let K2=0,P2=0;const h=Lw/M;for(let i=0;i<M;i++){const x=(i+.5)*h,a=Ut(x,t),b=Ux(x,t);K2+=a*a*h;P2+=c*c*b*b*h}return{kin:K2/2,pot:P2/2,tot:(K2+P2)/2}}
+    return{phi,psi,U,Ut,Ux,energy,period:2*Lw/c};}
+  return{erf,phiPresets,psiPresets,parts,u,finite};
+})();
+</script>
+<script>
+/* ---- 通用绘图工具（本页自带，不依赖其他文件） ---- */
+const C={bg:'#0a0e27',grid:'rgba(120,145,190,.13)',axis:'#5b6f93',tick:'#9fb0cc',text:'#dfe8f7',cyan:'#2dd4bf',pink:'#ec4899',gold:'#fbbf24',violet:'#a78bfa',blue:'#77a6ff',orange:'#fb923c',white:'#edf4ff'};
+function fit(cv){const d=window.devicePixelRatio||1,r=cv.getBoundingClientRect(),w=Math.max(40,r.width),h=Math.max(40,r.height);const W=Math.round(w*d),H=Math.round(h*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w,h}}
+function niceStep(span,n){const raw=span/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3?2:m<7?5:10)*p}
+function fmtTick(v,s){if(Math.abs(v)<s*1e-6)return'0';const dg=Math.max(0,-Math.floor(Math.log10(s)+1e-9));return v.toFixed(Math.min(dg,4))}
+/* frame: 画坐标系，返回坐标变换。opt:{x:[a,b],y:[c,d],xl,yl,pad,xt,yt,xticks,yticks,logy,logx} */
+function frame(cv,o){const{ctx,w,h}=fit(cv);const p=Object.assign({l:52,r:14,t:14,b:40},o.pad||{});ctx.fillStyle=C.bg;ctx.fillRect(0,0,w,h);const[x0,x1]=o.x,[y0,y1]=o.y;const pw=w-p.l-p.r,ph=h-p.t-p.b;const X=x=>p.l+(x-x0)/(x1-x0)*pw,Y=y=>p.t+(1-(y-y0)/(y1-y0))*ph;const IX=px=>x0+(px-p.l)/pw*(x1-x0),IY=py=>y0+(1-(py-p.t)/ph)*(y1-y0);ctx.font='12px system-ui,"Microsoft YaHei",sans-serif';ctx.lineWidth=1;
+const xt=o.xticks||(()=>{const s=niceStep(x1-x0,o.xn||7),a=[];for(let v=Math.ceil(x0/s)*s;v<=x1+1e-9;v+=s)a.push([v,o.xfmt?o.xfmt(v):fmtTick(v,s)]);return a})();const yt=o.yticks||(()=>{const s=niceStep(y1-y0,o.yn||5),a=[];for(let v=Math.ceil(y0/s)*s;v<=y1+1e-9;v+=s)a.push([v,o.yfmt?o.yfmt(v):fmtTick(v,s)]);return a})();
+ctx.strokeStyle=C.grid;ctx.fillStyle=C.tick;ctx.textAlign='center';ctx.textBaseline='top';for(const[v,l]of xt){const px=X(v);ctx.beginPath();ctx.moveTo(px,p.t);ctx.lineTo(px,p.t+ph);ctx.stroke();ctx.fillText(l,px,p.t+ph+5)}ctx.textAlign='right';ctx.textBaseline='middle';for(const[v,l]of yt){const py=Y(v);ctx.beginPath();ctx.moveTo(p.l,py);ctx.lineTo(p.l+pw,py);ctx.stroke();ctx.fillText(l,p.l-6,py)}
+ctx.strokeStyle=C.axis;ctx.strokeRect(p.l+.5,p.t+.5,pw-1,ph-1);if(o.zeroY!==false&&y0<0&&y1>0){ctx.beginPath();ctx.moveTo(p.l,Y(0));ctx.lineTo(p.l+pw,Y(0));ctx.stroke()}
+ctx.fillStyle=C.text;ctx.font='12.5px system-ui,"Microsoft YaHei",sans-serif';if(o.xl){ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(o.xl,p.l+pw-4,p.t+ph-4)}if(o.yl){ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(o.yl,p.l+6,p.t+5)}
+return{ctx,w,h,X,Y,IX,IY,p,pw,ph,clip(){ctx.save();ctx.beginPath();ctx.rect(p.l,p.t,pw,ph);ctx.clip()},unclip(){ctx.restore()}}}
+function polyline(f,xs,ys,color,width=2,dash=null,alpha=1){const c=f.ctx;c.save();c.globalAlpha=alpha;c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';if(dash)c.setLineDash(dash);c.beginPath();let pen=false;for(let i=0;i<xs.length;i++){const y=ys[i];if(!isFinite(y)){pen=false;continue}const px=f.X(xs[i]),py=f.Y(y);if(!pen){c.moveTo(px,py);pen=true}else c.lineTo(px,py)}c.stroke();c.restore()}
+function fillUnder(f,xs,ys,color,alpha=.25,base=0){const c=f.ctx;c.save();c.globalAlpha=alpha;c.fillStyle=color;c.beginPath();c.moveTo(f.X(xs[0]),f.Y(base));for(let i=0;i<xs.length;i++)c.lineTo(f.X(xs[i]),f.Y(ys[i]));c.lineTo(f.X(xs[xs.length-1]),f.Y(base));c.closePath();c.fill();c.restore()}
+function label(f,txt,x,y,color,align='left',base='bottom'){const c=f.ctx;c.save();c.font='12.5px system-ui,"Microsoft YaHei",sans-serif';c.fillStyle=color;c.textAlign=align;c.textBaseline=base;c.fillText(txt,x,y);c.restore()}
+/* 发散色标：负→蓝，零→深色，正→金橙 */
+function divColor(v){const t=Math.max(-1,Math.min(1,v)),a=Math.pow(Math.abs(t),.8);const z=[16,24,48],pos=t>=0?[251,170,60]:[90,150,255];return[z[0]+(pos[0]-z[0])*a,z[1]+(pos[1]-z[1])*a,z[2]+(pos[2]-z[2])*a]}
+/* 在 frame 的绘图区画热图：vals 为 ny 行 nx 列（第 0 行是 y 最小处） */
+function heatmap(f,vals,nx,ny,scale,cmap=divColor){const off=document.createElement('canvas');off.width=nx;off.height=ny;const oc=off.getContext('2d'),img=oc.createImageData(nx,ny);for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const c=cmap(vals[j*nx+i]/scale),k=((ny-1-j)*nx+i)*4;img.data[k]=c[0];img.data[k+1]=c[1];img.data[k+2]=c[2];img.data[k+3]=255}oc.putImageData(img,0,0);const c=f.ctx;c.save();c.imageSmoothingEnabled=true;c.drawImage(off,f.p.l,f.p.t,f.pw,f.ph);c.restore()}
+function linspace(a,b,n){const r=new Float64Array(n);for(let i=0;i<n;i++)r[i]=a+(b-a)*i/(n-1);return r}
+const fmt=(v,d=3)=>{if(!isFinite(v))return'—';const a=Math.abs(v);if(a!==0&&(a<1e-3||a>=1e5))return v.toExponential(2).replace('e','×10^').replace(/\^\+?(-?)0*(\d+)/,(m,s,n)=>'^'+s+n);return v.toFixed(d)};
+function sup(s){return s.replace(/\^(-?\d+)/g,(m,n)=>[...n].map(ch=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(ch)]||'⁻').join(''))}
+const fmtS=(v,d=3)=>sup(fmt(v,d));
+function onDrag(cv,cb){let down=false;const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);cb(...pos(e),'down')});cv.addEventListener('pointermove',e=>{if(down)cb(...pos(e),'move')});const up=e=>{if(down){down=false;cb(...pos(e),'up')}};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
+
+const $=id=>document.getElementById(id);const Wv=WaveCore;
+const XS=linspace(-6,6,721);
+function sh(){return{phi:Wv.phiPresets[$('w1-phi').value],psi:Wv.psiPresets[$('w1-psi').value],c:+$('w1-c').value,pk:$('w1-phi').value,sk:$('w1-psi').value}}
+/* ===== 实验一 ===== */
+let p1=false;
+function w1Draw(){const S=sh(),t=+$('w1-t').value;$('w1-co').textContent=S.c.toFixed(2);$('w1-to').textContent=t.toFixed(2);
+  const R=[],L=[],V=[],U=[],F=[];for(const x of XS){const q=Wv.parts(S.phi,S.psi,S.c,x,t);R.push(q.R);L.push(q.L);V.push(q.V);U.push(q.u);F.push(S.phi.f(x))}
+  const f=frame($('w1-u'),{x:[-6,6],y:[-0.25,1.25],xl:'x',yl:'u'});f.clip();
+  if(S.pk!=='none')polyline(f,XS,F,'#cbd5e1',1.3,[5,5],.45);
+  polyline(f,XS,U,C.gold,2.8);if(S.pk!=='none'){polyline(f,XS,R,C.cyan,1.6,[7,5]);polyline(f,XS,L,C.pink,1.6,[7,5])}if(S.sk!=='none')polyline(f,XS,V,C.violet,1.7,[7,5]);
+  const ct=S.c*t;for(const s of[-1,1]){if(Math.abs(ct)<6&&S.pk!=='none'){f.ctx.fillStyle=s>0?C.cyan:C.pink;f.ctx.beginPath();f.ctx.moveTo(f.X(s*ct),f.Y(-0.2));f.ctx.lineTo(f.X(s*ct)-5,f.Y(-0.2)+8);f.ctx.lineTo(f.X(s*ct)+5,f.Y(-0.2)+8);f.ctx.fill()}}f.unclip();
+  let mx=-1e9,I=0;for(let i=0;i<U.length;i++){mx=Math.max(mx,U[i]);I+=U[i]*(12/(XS.length-1))}
+  $('w1-r-t').textContent=t.toFixed(2);$('w1-r-ct').textContent='±'+ct.toFixed(2);$('w1-r-max').textContent=fmt(mx,3);$('w1-r-int').textContent=fmt(I,3)+(Math.abs(ct)>4.5?'（部分已跑出画面）':'');
+  let m='';if(S.pk!=='none')m+=`<b>位移部分：</b>初始形状分成两半（青色、粉色虚线），各以速度 c = ${S.c.toFixed(2)} 向右、向左平移，此刻中心在 ±${ct.toFixed(2)}。${S.pk==='box'?'方块的跳跃没有被抹平：它沿特征线原样移动。':S.pk==='tri'?'三角的尖角沿特征线原样移动，不会变圆。':'两半在 t ≈ '+(1.5/S.c).toFixed(2)+' 之后完全分开。'}`;
+  if(S.sk!=='none'){const tot=S.sk==='gauss'?0.5*Math.sqrt(Math.PI):1.4;m+=` <b>速度部分：</b>(1/2c)∫ψ 在依赖区间覆盖整个冲量后达到平台高度 (1/2c)∫ψ = ${(tot/(2*S.c)).toFixed(3)}，并以两条前沿向外扩张——一维弦被敲击后不会回到原位。`}
+  if(!m)m='φ 与 ψ 都为零，解恒为零（唯一性）。';$('w1-status').innerHTML=m}
+['w1-phi','w1-psi','w1-c'].forEach(id=>$(id).addEventListener('input',()=>{w1Draw();w2Recompute()}));$('w1-t').addEventListener('input',w1Draw);
+$('w1-play').addEventListener('click',()=>{p1=!p1;$('w1-play').textContent=p1?'❚❚ 暂停':'▶ 播放';if(p1&&+$('w1-t').value>=4)$('w1-t').value=0;if(p1)requestAnimationFrame(t1)});
+function t1(){if(!p1)return;let v=+$('w1-t').value+0.012;if(v>=4){v=4;p1=false;$('w1-play').textContent='▶ 播放'}$('w1-t').value=v;w1Draw();if(p1)requestAnimationFrame(t1)}
+/* ===== 实验二 ===== */
+const E2={x0:1.2,t0:2.2,grid:null};const TT=4;
+function w2Recompute(){const S=sh(),nx=300,nt=160,v=new Float64Array(nx*nt);let mx=1e-9;for(let j=0;j<nt;j++){const t=TT*j/(nt-1);for(let i=0;i<nx;i++){const x=-6+12*i/(nx-1),u=Wv.u(S.phi,S.psi,S.c,x,t);v[j*nx+i]=u;mx=Math.max(mx,Math.abs(u))}}E2.grid={v,nx,nt,mx};w2Draw()}
+function w2Draw(){const S=sh(),{x0,t0}=E2,c=S.c,a=x0-c*t0,b=x0+c*t0;const f=frame($('w2-xt'),{x:[-6,6],y:[0,TT],xl:'x',yl:'t'});heatmap(f,E2.grid.v,E2.grid.nx,E2.grid.nt,E2.grid.mx);f.clip();const ctx=f.ctx;
+  // 影响域边界
+  const supps=[S.phi.supp,S.psi.supp].filter(Boolean);if(supps.length){const lo=Math.min(...supps.map(s=>s[0])),hi=Math.max(...supps.map(s=>s[1]));ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle='#cbd5e1aa';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(f.X(lo),f.Y(0));ctx.lineTo(f.X(lo-c*TT),f.Y(TT));ctx.moveTo(f.X(hi),f.Y(0));ctx.lineTo(f.X(hi+c*TT),f.Y(TT));ctx.stroke();ctx.restore()}
+  ctx.fillStyle='#2dd4bf33';ctx.beginPath();ctx.moveTo(f.X(x0),f.Y(t0));ctx.lineTo(f.X(a),f.Y(0));ctx.lineTo(f.X(b),f.Y(0));ctx.closePath();ctx.fill();
+  ctx.strokeStyle=C.cyan;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.X(a),f.Y(0));ctx.lineTo(f.X(x0),f.Y(t0));ctx.lineTo(f.X(b),f.Y(0));ctx.stroke();
+  ctx.save();ctx.globalAlpha=.45;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(f.X(x0),f.Y(t0));ctx.lineTo(f.X(x0+c*(TT-t0)),f.Y(TT));ctx.moveTo(f.X(x0),f.Y(t0));ctx.lineTo(f.X(x0-c*(TT-t0)),f.Y(TT));ctx.stroke();ctx.restore();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(f.X(x0),f.Y(t0),5,0,7);ctx.fill();ctx.strokeStyle=C.cyan;ctx.stroke();label(f,'(x₀,t₀)',f.X(x0)+8,f.Y(t0)-6,'#fff');label(f,'x−ct = x₀−ct₀',f.X(a+(x0-a)*0.3)-8,f.Y(t0*0.3),C.cyan,'right','middle');label(f,'x+ct = x₀+ct₀',f.X(b-(b-x0)*0.3)+8,f.Y(t0*0.3),C.cyan,'left','middle');f.unclip();
+  // 初值图
+  const g=frame($('w2-init'),{x:[-6,6],y:[-0.15,1.2],xl:'x',yl:'t = 0 上的初值'});g.clip();g.ctx.fillStyle='#2dd4bf26';g.ctx.fillRect(g.X(a),g.p.t,g.X(b)-g.X(a),g.ph);
+  const ps=XS.map(S.psi.f),ph=XS.map(S.phi.f);const inI=XS.map((x,i)=>x>=a&&x<=b?ps[i]:0);fillUnder(g,XS,inI,C.violet,.35);polyline(g,XS,ps,C.violet,2);polyline(g,XS,ph,C.gold,2.4);
+  for(const e of[a,b]){g.ctx.fillStyle=C.cyan;g.ctx.beginPath();g.ctx.arc(g.X(e),g.Y(S.phi.f(e)),5.5,0,7);g.ctx.fill()}g.unclip();
+  const q=Wv.parts(S.phi,S.psi,c,x0,t0);$('w2-r-pt').textContent=`(${x0.toFixed(2)}, ${t0.toFixed(2)})`;$('w2-r-phi').textContent=fmt(q.R+q.L,4);$('w2-r-psi').textContent=fmt(q.V,4);$('w2-r-u').textContent=fmt(q.u,4);
+  $('w2-status').innerHTML=`<b>读图：</b>依赖区间是 [${a.toFixed(2)}, ${b.toFixed(2)}]，长度 2ct₀ = ${(2*c*t0).toFixed(2)}。φ 只在两个端点（青色圆点）被用到；ψ 在整个区间上积分（紫色阴影面积 ÷ 2c）。区间以外随意改动初值，u(x₀,t₀) 都不会变——这就是有限传播速度。左图虚线楔形之外，扰动尚未到达，u 恰好为零${S.sk!=='none'?'；楔形内部、两列波之间的平台是 ψ 留下的“永久位移”':''}。`}
+onDrag($('w2-xt'),(px,py)=>{const f=frame($('w2-xt'),{x:[-6,6],y:[0,TT]});E2.x0=Math.max(-6,Math.min(6,f.IX(px)));E2.t0=Math.max(0,Math.min(TT,f.IY(py)));w2Draw()});
+/* ===== 实验三 ===== */
+const E3={hist:[],ghost:true,playing:false,F:null};const Lw=4;
+function w3Make(){const o={Lw,p:+$('w3-p').value,w:+$('w3-w').value,A:1,kind:$('w3-kind').value,bc:$('w3-bc').value,c:1};if(o.kind==='vel')o.A=1.2;E3.F=Wv.finite(o);$('w3-po').textContent=o.p.toFixed(2);$('w3-wo').textContent=o.w.toFixed(2);
+  const ts=linspace(0,16,481);E3.hist=Array.from(ts,t=>Object.assign({t},E3.F.energy(t,320)));E3.E0=E3.F.energy(0,2000).tot;w3Draw()}
+function w3Draw(){const F=E3.F,t=+$('w3-t').value;$('w3-to').textContent=t.toFixed(2);const xs=linspace(-4,8,961),u=xs.map(x=>F.U(x,t));
+  let lo=-1.15,hi=1.15;if($('w3-kind').value==='vel'){let m=0;for(const h of[0,4,8,12,16])for(const x of linspace(0,Lw,80))m=Math.max(m,Math.abs(F.U(x,h)));const mm=Math.max(1,...u.map(Math.abs),m);lo=-mm*1.1;hi=mm*1.1}
+  const f=frame($('w3-u'),{x:[-4,8],y:[lo,hi],xl:'x',yl:'u'});const ctx=f.ctx;ctx.fillStyle='#ffffff0b';ctx.fillRect(f.X(-4),f.p.t,f.X(0)-f.X(-4),f.ph);ctx.fillRect(f.X(Lw),f.p.t,f.X(8)-f.X(Lw),f.ph);f.clip();
+  if(E3.ghost)polyline(f,xs,u,'#cbd5e1',1.4,null,.45);const inside=xs.map((x,i)=>x>=0&&x<=Lw?u[i]:NaN);polyline(f,xs,inside,C.gold,3);
+  for(const e of[0,Lw]){ctx.strokeStyle=C.cyan;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.X(e),f.p.t);ctx.lineTo(f.X(e),f.p.t+f.ph);ctx.stroke()}
+  label(f,'镜像',f.X(-2),f.p.t+8,'#cbd5e199','center','top');label(f,'镜像',f.X(6),f.p.t+8,'#cbd5e199','center','top');label(f,'弦 [0, L]',f.X(2),f.p.t+8,C.gold,'center','top');f.unclip();
+  const H=E3.hist,em=Math.max(...H.map(h=>h.tot))*1.15;const g=frame($('w3-E'),{x:[0,16],y:[0,em],xl:'t',yl:'E'});const ts=H.map(h=>h.t);polyline(g,ts,H.map(h=>h.kin),C.pink,1.8);polyline(g,ts,H.map(h=>h.pot),C.cyan,1.8);polyline(g,ts,H.map(h=>h.tot),C.gold,2.6);
+  g.ctx.strokeStyle='#ffffff88';g.ctx.setLineDash([3,4]);g.ctx.beginPath();g.ctx.moveTo(g.X(t),g.p.t);g.ctx.lineTo(g.X(t),g.p.t+g.ph);g.ctx.stroke();g.ctx.setLineDash([]);for(let k=1;k*8<=16;k++)label(g,`${k}T`,g.X(8*k)-3,g.p.t+g.ph-4,'#aebbd4','right');
+  const e=F.energy(t,2000);$('w3-r-t').textContent=`${t.toFixed(2)} / ${F.period.toFixed(0)}`;$('w3-r-E').textContent=fmt(e.tot,5);$('w3-r-dE').innerHTML=fmtS(Math.abs(e.tot-E3.E0)/E3.E0);const z=v=>Math.abs(v)<1e-12?'0':fmt(v,3);$('w3-r-end').textContent=`${z(F.U(0,t))} / ${z(F.U(Lw,t))}`;
+  const fixed=$('w3-bc').value==='fixed',vel=$('w3-kind').value==='vel';
+  $('w3-status').innerHTML=`<b>${fixed?'固定端':'自由端'}：</b>灰色镜像是${fixed?'奇':'偶'}延拓得到的脉冲，它们${fixed?'上下翻转':'不翻转'}地在弦外“排队”。镜像脉冲穿过端点进入弦内时，看起来就是原脉冲的反射——${fixed?'固定端反射后位移变号':'自由端反射后位移同号，且在端点处叠加成两倍高度'}。总能量 E 在整个过程中保持 ${fmt(E3.E0,4)}；动能和势能来回交换：脉冲与它的镜像重叠时，${fixed?'位移相消、速度加倍，这段弦被拉平，能量暂时全是动能（粉色尖峰）':'速度相消、位移加倍，能量暂时全是势能（青色尖峰）'}；两个脉冲在弦内相遇时也会出现尖峰（同号相遇 → 势能，异号相遇 → 动能）。${!fixed&&vel?' 注意：两端自由时总动量守恒，被敲击的弦整体缓慢漂移。':''} 经过一个周期 T = 2L/c = ${F.period.toFixed(0)}，弦回到初始状态。`}
+['w3-bc','w3-kind','w3-p','w3-w'].forEach(id=>$(id).addEventListener('input',w3Make));$('w3-t').addEventListener('input',w3Draw);
+$('w3-ghost').addEventListener('click',()=>{E3.ghost=!E3.ghost;$('w3-ghost').textContent=E3.ghost?'隐藏镜像':'显示镜像';$('w3-ghost').setAttribute('aria-pressed',E3.ghost);w3Draw()});
+$('w3-play').addEventListener('click',()=>{E3.playing=!E3.playing;$('w3-play').textContent=E3.playing?'❚❚ 暂停':'▶ 播放';if(E3.playing&&+$('w3-t').value>=16)$('w3-t').value=0;if(E3.playing)requestAnimationFrame(t3)});
+function t3(){if(!E3.playing)return;let v=+$('w3-t').value+0.03;if(v>=16){v=16;E3.playing=false;$('w3-play').textContent='▶ 播放'}$('w3-t').value=v;w3Draw();if(E3.playing)requestAnimationFrame(t3)}
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{w1Draw();w2Draw();w3Draw()},120)});
+w1Draw();w2Recompute();w3Make();
+</script>
+</body>
+</html>

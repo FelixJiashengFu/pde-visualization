@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="傅里叶级数交互可视化：部分和逼近、Gibbs 现象、Fejér 平均、系数衰减与光滑性、Parseval 恒等式。">
+<title>傅里叶级数｜部分和、Gibbs 现象与系数衰减</title>
+<style>
+:root{--bg:#0b1020;--canvas:#0a0e27;--panel:rgba(22,31,57,.79);--line:#344462;--text:#edf4ff;--muted:#aebbd4;--soft:#cbd5e1;--cyan:#2dd4bf;--pink:#ec4899;--gold:#fbbf24;--violet:#a78bfa;--blue:#77a6ff;--orange:#fb923c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% -12%,#25365b 0,transparent 34%),radial-gradient(circle at 90% 4%,#1b1741 0,transparent 28%),var(--bg);color:var(--text);font:16px/1.62 system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+a{color:#9cc7ff}a:hover{color:#c8ddff}.wrap{width:min(1220px,calc(100% - 32px));margin:auto}.hero{padding:55px 0 32px}.eyebrow{color:var(--gold);font-weight:750;letter-spacing:.16em;font-size:.76rem;text-transform:uppercase}.hero h1{font-size:clamp(2rem,4.8vw,3.6rem);line-height:1.12;letter-spacing:-.035em;margin:12px 0}.hero p{max-width:820px;color:var(--soft);font-size:1.07rem;margin:0}.hero .sub{margin-top:12px;color:var(--muted);font-size:.92rem}.nav{display:flex;flex-wrap:wrap;gap:8px;margin:25px 0 0}.nav a{text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#121c34;color:var(--soft);font-size:.86rem}.nav a:hover{border-color:var(--cyan)}
+main{padding-bottom:60px}section{margin:24px 0 48px}h2{font-size:1.55rem;margin:0 0 16px;letter-spacing:-.015em}.section-kicker{font-size:.77rem;letter-spacing:.11em;color:var(--violet);font-weight:800;text-transform:uppercase;margin-bottom:3px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:var(--panel);border:1px solid rgba(131,155,197,.23);border-radius:18px;padding:22px;box-shadow:0 12px 35px rgba(1,6,20,.17)}.card h3{margin:0 0 10px;font-size:1.1rem}.card p{margin:8px 0;color:var(--soft)}.tag{display:inline-block;border:1px solid var(--line);background:#111a31;border-radius:999px;padding:2px 10px;color:var(--muted);font-size:.78rem}.conclusion{border-left:4px solid var(--gold);padding:16px 20px;background:linear-gradient(90deg,rgba(251,191,36,.12),rgba(251,191,36,.035));border-radius:0 15px 15px 0;margin-top:16px;color:var(--soft)}.conclusion strong{color:#ffe49b}
+.eq{overflow-x:auto;padding:13px 16px;background:#0a1429;border:1px solid rgba(110,135,187,.22);border-radius:10px;color:#f4f8ff;margin:11px 0 0;text-align:center;font-family:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",serif;font-size:1.12rem;white-space:nowrap}.eq i{font-style:italic}.eq .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}.eq .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}.eq .frac>span{font-size:.88em;line-height:1.25}.eq .big{font-size:1.5em;vertical-align:-.12em}.symbol-note{font-size:.84rem;line-height:1.55;color:var(--muted);padding:7px 3px 0;margin:0 0 6px}.symbol-note b{color:var(--soft);font-weight:650}code{background:#101a31;border:1px solid #263955;border-radius:5px;padding:0 4px;font-size:.88em}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:14px}.control{min-width:120px;flex:1 1 130px}.control.sel{flex:1 1 230px}.control label{display:block;font-size:.8rem;color:var(--muted);font-weight:650;margin-bottom:5px}.control label output{color:var(--gold);font-weight:800;margin-left:4px}.control input,.control select{width:100%;background:#111b34;color:var(--text);border:1px solid #52647f;border-radius:9px;padding:9px 10px;font:inherit;min-height:42px}.control input:focus-visible,.control select:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}.control.range{flex:2 1 180px}.control.range input{padding:0;border:0;background:transparent;height:42px;accent-color:var(--violet)}button{font:inherit;min-height:42px;border:1px solid #cc9b27;background:#dcae3d;color:#101526;border-radius:9px;padding:7px 15px;font-weight:800;cursor:pointer}button:hover{background:#f2c757}button.ghost{background:#111b34;color:var(--soft);border-color:#52647f}button.ghost:hover{border-color:var(--gold);background:#16223f}.btns{display:flex;gap:8px;flex-wrap:wrap}.hint{font-size:.8rem;color:var(--muted);width:100%;margin:-2px 0 0}
+.viz-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}.viz-card{padding:15px 15px 12px;min-width:0}.viz-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 10px;flex-wrap:wrap}.viz-title h3{margin:0;font-size:1rem}.viz-title span{font-size:.8rem;color:var(--muted)}canvas.plot{display:block;width:100%;height:360px;background:var(--canvas);border-radius:12px;border:1px solid #263958;touch-action:none}canvas.plot.tall{height:420px}canvas.plot.short{height:260px}.legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:10px 3px 2px;color:var(--soft);font-size:.82rem}.swatch{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}.swatch.dash{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)!important}.swatch.box{height:11px;width:11px;vertical-align:-1px}
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}.metric{background:#101a31;border:1px solid #263955;padding:10px 13px;border-radius:12px;min-width:0}.metric label{display:block;color:var(--muted);font-size:.76rem}.metric strong{display:block;font-size:1.02rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.status{margin-top:13px;padding:12px 15px;border-radius:12px;background:#0f1c33;border:1px solid #2b4466;color:var(--soft);font-size:.9rem}.status b{color:var(--gold)}.status.warn{border-color:#8b3a55;background:#2a1224}.caption{font-size:.86rem;color:var(--muted);margin:12px 3px 0}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.step{padding:19px}.step-num{display:inline-flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%;background:#2b2350;color:#d2c2ff;font-size:.83rem;font-weight:800;margin-right:8px}.step h3{display:inline;font-size:1.03rem}.step p{color:var(--soft);margin:8px 0 0}.wide-step{grid-column:1/-1}.table-wrap{overflow-x:auto;border:1px solid rgba(131,155,197,.25);border-radius:13px;background:#121c34}table{border-collapse:collapse;width:100%;min-width:560px}th,td{text-align:left;padding:10px 13px;border-bottom:1px solid #2b3b58;vertical-align:top}th{font-size:.83rem;color:#b9ceef;background:#17253e}td{font-size:.88rem;color:var(--soft)}tr:last-child td{border-bottom:0}td:first-child{font-family:"Cambria Math","Times New Roman",serif;font-size:1rem;color:var(--text);white-space:nowrap}.limit-list{padding-left:20px;color:var(--soft)}.limit-list li{margin:7px 0}.footer{color:var(--muted);font-size:.82rem;border-top:1px solid #2a3852;padding:24px 0 40px}.footer p{margin:5px 0}
+.grid2>*,.grid3>*,.steps>*,.viz-grid>*{min-width:0}.eq{max-width:100%}
+@media(max-width:880px){.btns{flex-wrap:wrap}.card{padding:16px}.viz-card{padding:10px}.grid2,.grid3,.viz-grid,.steps{grid-template-columns:1fr}.wide-step{grid-column:auto}.readout{grid-template-columns:repeat(2,minmax(0,1fr))}canvas.plot{height:300px}canvas.plot.tall{height:340px}.hero{padding:38px 0 22px}}
+</style>
+</head>
+<body>
+<header class="wrap hero">
+  <div class="eyebrow">Fourier series · 分析工具 · 级数与收敛</div>
+  <h1>傅里叶级数：<br>部分和如何逼近一个函数</h1>
+  <p>分离变量法把 PDE 的解写成正弦、余弦的无穷和，但这个和到底怎样收敛？本页让你逐项加上谐波，看部分和在跳跃处永远多冲出约 9%（Gibbs 现象）、看系数衰减速度如何暴露函数的光滑程度，再用 Parseval 恒等式量出“还差多少能量”。</p>
+  <p class="sub">全部系数在浏览器内用中点公式加 Richardson 外推实时计算，单文件、可离线打开。</p>
+  <nav class="nav" aria-label="页内导航">
+    <a href="#problem">定义与结论</a><a href="#exp1">实验一 · 部分和与 Gibbs</a><a href="#exp2">实验二 · 系数衰减与 Parseval</a><a href="#derivation">推导</a><a href="#symbols">符号表</a><a href="#limits">限制</a><a href="../../index.html">← 专题目录</a>
+  </nav>
+</header>
+<main class="wrap">
+<section id="problem">
+  <div class="section-kicker">Definitions</div>
+  <h2>三种级数、三条结论</h2>
+  <div class="grid3">
+    <div class="card">
+      <h3>完整傅里叶级数 · (−π, π)</h3>
+      <div class="eq">f ~ <span class="frac"><span>a<sub>0</sub></span><span>2</span></span> + <span class="big">Σ</span> (a<sub>n</sub> cos nx + b<sub>n</sub> sin nx)</div>
+      <p class="symbol-note">a<sub>n</sub> = <span>(1/π)∫<sub>−π</sub><sup>π</sup> f cos nx dx</span>，b<sub>n</sub> = (1/π)∫<sub>−π</sub><sup>π</sup> f sin nx dx。级数自动表示 f 的 <b>2π 周期延拓</b>。</p>
+    </div>
+    <div class="card">
+      <h3>正弦级数 · (0, π)</h3>
+      <div class="eq">f ~ <span class="big">Σ</span> b<sub>n</sub> sin nx,&nbsp; b<sub>n</sub> = <span class="frac"><span>2</span><span>π</span></span>∫<sub>0</sub><sup>π</sup> f sin nx dx</div>
+      <p class="symbol-note">对应 f 的<b>奇延拓</b>。Dirichlet 边界（两端 u = 0）的分离变量解用的就是它，例如热方程、弦振动。</p>
+    </div>
+    <div class="card">
+      <h3>余弦级数 · (0, π)</h3>
+      <div class="eq">f ~ <span class="frac"><span>a<sub>0</sub></span><span>2</span></span> + <span class="big">Σ</span> a<sub>n</sub> cos nx,&nbsp; a<sub>n</sub> = <span class="frac"><span>2</span><span>π</span></span>∫<sub>0</sub><sup>π</sup> f cos nx dx</div>
+      <p class="symbol-note">对应 f 的<b>偶延拓</b>。Neumann 边界（两端 u<sub>x</sub> = 0，绝热或自由端）用的是它。</p>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="card"><div class="conclusion" style="margin:0"><strong>结论 1（逐点收敛）：</strong>f 分段光滑时，部分和 S<sub>N</sub>(x) 在连续点收敛到 f(x)，在跳跃点收敛到左右极限的平均值 ½[f(x−)+f(x+)]。</div></div>
+    <div class="card"><div class="conclusion" style="margin:0"><strong>结论 2（Gibbs 现象）：</strong>在跳跃点附近，S<sub>N</sub> 的最大超调不随 N 消失，而是趋于跳跃高度的 ≈ 8.95%。加权的 Fejér 平均 σ<sub>N</sub> 没有超调。</div></div>
+    <div class="card"><div class="conclusion" style="margin:0"><strong>结论 3（光滑性 ↔ 衰减）：</strong>延拓有跳跃 ⇒ 系数 ~ 1/n；连续但有尖角 ⇒ ~ 1/n²；越光滑衰减越快，光滑周期函数是指数衰减。Parseval：Σ 系数² = (1/π)∫f²。</div></div>
+  </div>
+</section>
+
+<section id="exp1">
+  <div class="section-kicker">Experiment 1</div>
+  <h2>实验一：一项一项加上去——部分和与 Gibbs 现象</h2>
+  <div class="card">
+    <div class="controls">
+      <div class="control sel"><label for="f-pre">函数 f(x)</label><select id="f-pre"><option value="square">方波 sgn x</option><option value="saw">锯齿 x</option><option value="abs">|x|</option><option value="parab">抛物线 x²</option><option value="halfsin">半波整流 max(sin x, 0)</option><option value="smooth">光滑 e^(cos x)</option><option value="draw">自己画（在上图基本区间内拖动）</option></select></div>
+      <div class="control sel"><label for="f-type">级数类型（决定延拓方式）</label><select id="f-type"><option value="full">完整级数，(−π, π) 周期延拓</option><option value="sine">正弦级数，(0, π) 奇延拓</option><option value="cos">余弦级数，(0, π) 偶延拓</option></select></div>
+      <div class="control range"><label for="f-N">项数 N <output id="f-No">9</output></label><input id="f-N" type="range" min="0" max="200" step="1" value="9"></div>
+      <div class="control sel"><label for="f-sum">求和方式</label><select id="f-sum"><option value="partial">部分和 S_N</option><option value="fejer">Fejér 平均 σ_N</option></select></div>
+      <div class="btns"><button id="f-play">▶ 逐项增加</button><button class="ghost" id="f-harm" aria-pressed="false">显示最后 3 个谐波</button></div>
+      <p class="hint">换级数类型时注意白色延拓曲线如何改变：同一个 f，正弦级数与余弦级数的“跳跃”可能完全不同，收敛速度也随之不同。</p>
+    </div>
+    <div class="viz-card card">
+      <div class="viz-title"><h3>延拓函数与部分和</h3><span>横轴 x ∈ [−3π, 3π]，亮区是基本区间</span></div>
+      <canvas id="f-main" class="plot" role="img" aria-label="周期延拓函数与傅里叶部分和"></canvas>
+      <div class="legend"><span style="color:#cbd5e1"><i class="swatch" style="background:#cbd5e1;opacity:.6"></i>f 的延拓</span><span><i class="swatch" style="background:var(--gold)"></i>S<sub>N</sub> 或 σ<sub>N</sub></span><span id="f-harmleg" hidden><i class="swatch" style="background:var(--cyan)"></i><i class="swatch" style="background:var(--pink)"></i><i class="swatch" style="background:var(--violet)"></i>最后加入的 3 个谐波</span><span><i class="swatch box" style="background:var(--cyan);border-radius:50%"></i>跳跃点处的平均值</span></div>
+    </div>
+    <div class="viz-grid" style="margin-top:16px">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>放大最大的跳跃</h3><span id="f-zoomlab">横轴 x，纵轴函数值</span></div>
+        <canvas id="f-zoom" class="plot" role="img" aria-label="跳跃点附近的放大图与 Gibbs 超调"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--gold)"></i>S<sub>N</sub> / σ<sub>N</sub></span><span style="color:var(--pink)"><i class="swatch dash"></i>理论极限：跳跃的 8.95%</span><span style="color:#cbd5e1"><i class="swatch" style="background:#cbd5e1;opacity:.6"></i>f</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>逐点误差 S<sub>N</sub>(x) − f(x)</h3><span>横轴 x ∈ 基本区间，纵轴误差</span></div>
+        <canvas id="f-err" class="plot" role="img" aria-label="部分和逐点误差"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--orange)"></i>误差</span><span>误差在跳跃附近不随 N 变小，但尖峰越来越窄</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>最大跳跃高度</label><strong id="f-r-J">—</strong></div>
+      <div class="metric"><label>超调 / 跳跃高度</label><strong id="f-r-gibbs">—</strong></div>
+      <div class="metric"><label>基本区间上 max |误差|</label><strong id="f-r-sup">—</strong></div>
+      <div class="metric"><label>相对 L² 误差 ‖f − S<sub>N</sub>‖/‖f‖</label><strong id="f-r-l2">—</strong></div>
+    </div>
+    <div class="status" id="f-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="exp2">
+  <div class="section-kicker">Experiment 2</div>
+  <h2>实验二：系数衰减有多快？能量还差多少？</h2>
+  <div class="card">
+    <p class="caption" style="margin-top:0">函数与级数类型沿用实验一。左图读斜率：直线越陡，函数（的延拓）越光滑。</p>
+    <div class="viz-grid">
+      <div class="viz-card card">
+        <div class="viz-title"><h3>系数振幅 √(a<sub>n</sub>² + b<sub>n</sub>²)（双对数）</h3><span>横轴 log₁₀ n，纵轴 log₁₀ 振幅</span></div>
+        <canvas id="f-coef" class="plot" role="img" aria-label="傅里叶系数振幅的双对数图与参考斜率线"></canvas>
+        <div class="legend"><span><i class="swatch box" style="background:var(--gold);border-radius:50%"></i>|c<sub>n</sub>|（零系数不画）</span><span style="color:#cbd5e1"><i class="swatch dash"></i>参考线 1/n、1/n²、1/n³</span><span><i class="swatch" style="background:var(--pink)"></i>当前 N</span></div>
+      </div>
+      <div class="viz-card card">
+        <div class="viz-title"><h3>Parseval：L² 误差随 N</h3><span>横轴 log₁₀ N，纵轴 log₁₀ 相对 L² 误差</span></div>
+        <canvas id="f-l2" class="plot" role="img" aria-label="相对 L2 误差随项数的变化"></canvas>
+        <div class="legend"><span><i class="swatch" style="background:var(--cyan)"></i>‖f − S<sub>N</sub>‖/‖f‖</span><span><i class="swatch box" style="background:var(--pink);border-radius:50%"></i>当前 N</span></div>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="metric"><label>拟合斜率（n = 20…200）</label><strong id="f-r-slope">—</strong></div>
+      <div class="metric"><label>判断</label><strong id="f-r-class">—</strong></div>
+      <div class="metric"><label>(1/π)∫|f|²（Parseval 左边）</label><strong id="f-r-norm">—</strong></div>
+      <div class="metric"><label>前 N 项已占能量</label><strong id="f-r-frac">—</strong></div>
+    </div>
+    <div class="status" id="f-status2" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="derivation">
+  <div class="section-kicker">Derivation</div>
+  <h2>从定义到图：六个要点</h2>
+  <div class="steps">
+    <div class="card step"><span class="step-num">1</span><h3>正交性给出系数公式</h3><p>在 (−π, π) 上，1, cos nx, sin nx 两两正交：∫cos nx cos mx dx = πδ<sub>nm</sub>（n,m ≥ 1）等。把 f 的展开式乘 cos mx 后积分，其余项全部消失，只剩 πa<sub>m</sub>。正弦、余弦级数在 (0, π) 上同理，只是归一化常数变成 2/π。</p></div>
+    <div class="card step"><span class="step-num">2</span><h3>部分和 = 与 Dirichlet 核的卷积</h3><p>S<sub>N</sub>(x) = (1/2π)∫f(x−y)D<sub>N</sub>(y)dy，D<sub>N</sub>(y) = sin((N+½)y)/sin(y/2)。D<sub>N</sub> 有正有负、振荡越来越密，这正是 S<sub>N</sub> 在跳跃附近出现波纹的原因。</p></div>
+    <div class="card step"><span class="step-num">3</span><h3>Gibbs 常数</h3><p>以方波为例，S<sub>N</sub> 第一个极大值在 x ≈ π/(N+1)，其值趋于 (2/π)∫<sub>0</sub><sup>π</sup>(sin s/s)ds ≈ 1.17898。超出 1 的部分是 0.17898，即跳跃高度 2 的 8.949%。超调位置向跳跃点靠拢，但高度不降。</p></div>
+    <div class="card step"><span class="step-num">4</span><h3>Fejér 平均</h3><p>σ<sub>N</sub> = (S<sub>0</sub> + … + S<sub>N</sub>)/(N+1) 等于与 Fejér 核 F<sub>N</sub> 的卷积，F<sub>N</sub> ≥ 0 且积分为 1，所以 σ<sub>N</sub> 是 f 的加权平均，永远不会超出 f 的取值范围——没有 Gibbs 超调；代价是在跳跃处过渡更平缓。</p></div>
+    <div class="card step"><span class="step-num">5</span><h3>分部积分：光滑性 → 衰减</h3><p>b<sub>n</sub> = (1/π)∫f sin nx dx，分部积分一次得到边界项 + (1/(nπ))∫f′ cos nx。延拓有跳跃时边界项 ~ 1/n 留下来；延拓连续则边界项抵消，再分部一次得到 ~ 1/n²。每多一阶连续导数，衰减就多一个 1/n。这就是为什么 x² 的余弦级数（偶延拓连续）比正弦级数（奇延拓在 ±π 有跳跃）收敛快得多。</p></div>
+    <div class="card step"><span class="step-num">6</span><h3>Parseval 恒等式</h3><p>(1/π)∫<sub>−π</sub><sup>π</sup>|f|² dx = a<sub>0</sub>²/2 + Σ(a<sub>n</sub>² + b<sub>n</sub>²)。于是 ‖f − S<sub>N</sub>‖² = π·Σ<sub>n&gt;N</sub>(a<sub>n</sub>² + b<sub>n</sub>²)：L² 误差完全由尾部系数决定。系数 ~ 1/n 时 L² 误差 ~ N<sup>−1/2</sup>，系数 ~ 1/n² 时 ~ N<sup>−3/2</sup>。实验二右图的斜率就是这两个数。</p></div>
+  </div>
+</section>
+
+<section id="symbols">
+  <div class="section-kicker">Symbols</div>
+  <h2>数学符号速查表</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>符号</th><th>读法</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>a<sub>n</sub>, b<sub>n</sub></td><td>余弦、正弦系数</td><td>f 在 cos nx、sin nx 方向上的投影。</td></tr>
+      <tr><td>S<sub>N</sub>(x)</td><td>第 N 个部分和</td><td>a<sub>0</sub>/2 + Σ<sub>n=1</sub><sup>N</sup>(a<sub>n</sub> cos nx + b<sub>n</sub> sin nx)。</td></tr>
+      <tr><td>σ<sub>N</sub>(x)</td><td>Fejér（Cesàro）平均</td><td>前 N+1 个部分和的算术平均，等价于给第 n 项乘权重 1 − n/(N+1)。</td></tr>
+      <tr><td>f(x±)</td><td>右／左极限</td><td>跳跃点两侧的极限值；S<sub>N</sub> 在跳跃点收敛到两者平均。</td></tr>
+      <tr><td>‖f‖</td><td>L² 范数</td><td>(∫<sub>−π</sub><sup>π</sup>|f|² dx)<sup>1/2</sup>，衡量“能量”。</td></tr>
+      <tr><td>D<sub>N</sub>, F<sub>N</sub></td><td>Dirichlet 核、Fejér 核</td><td>部分和、Fejér 平均对应的卷积核；前者有负值，后者非负。</td></tr>
+      <tr><td>≈ 8.95%</td><td>Gibbs 常数</td><td>(1/π)∫<sub>0</sub><sup>π</sup>(sin s/s)ds − ½ ≈ 0.08949，超调与跳跃高度之比的极限。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="limits">
+  <div class="section-kicker">Scope</div>
+  <h2>限制与小结</h2>
+  <div class="card">
+    <ul class="limit-list">
+      <li><b>精确 vs 数值：</b>系数用 8192 与 4096 点中点公式做 Richardson 外推（对本页预设，n ≤ 60 时与闭式解的差 &lt; 10⁻⁸，n = 400 时相对误差约 10⁻⁴），超调、最大误差在 4000 个采样点上读取，L² 误差由 Parseval 用前 400 个系数计算。数值读数是近似，结论 1–3 是定理。</li>
+      <li><b>拟合斜率</b>只在 n = 20…200 的非零系数上做最小二乘；对指数衰减的光滑函数，系数很快跌到舍入误差（~10⁻¹⁵）以下，拟合斜率只说明“比任何幂次都陡”。</li>
+      <li><b>“超调 / 跳跃”</b>按 (max S<sub>N</sub> − max f) 与 (min f − min S<sub>N</sub>) 的较大者除以最大跳跃计算，对一个跳跃的情形准确；自绘函数含多个跳跃时只作参考。</li>
+      <li><b>收敛条件：</b>逐点收敛结论要求 f 分段光滑（或有界变差）；只连续的函数，其傅里叶级数可能在某些点发散。L² 收敛对任何平方可积函数都成立。</li>
+    </ul>
+    <div class="conclusion"><strong>一句话：</strong>傅里叶级数收敛得快不快，取决于函数的<b>延拓</b>有多光滑；跳跃带来 1/n 的慢衰减和抹不掉的 9% 超调——这也是为什么热方程（实验中高频被 e<sup>−n²t</sup> 压制）一启动就能把 Gibbs 振荡消灭。</div>
+  </div>
+</section>
+</main>
+<footer class="wrap footer"><p>PDE Visualization · 傅里叶级数专题。验证脚本见 <a href="source/README.md">source/</a>。</p><p><a href="../../index.html">← 返回专题目录</a></p></footer>
+
+<script id="core">
+/* FourierCore：纯数学内核（无 DOM），source/verify.cjs 直接抽取本段做数值检查 */
+const FourierCore=(()=>{
+  const PI=Math.PI;
+  // 预设函数，定义在 [−π, π]；正弦/余弦级数只使用 (0, π) 上的部分
+  const presets={
+    square:x=>x>0?1:(x<0?-1:0),
+    saw:x=>x,
+    abs:x=>Math.abs(x),
+    parab:x=>x*x,
+    halfsin:x=>Math.max(Math.sin(x),0),
+    smooth:x=>Math.exp(Math.cos(x)),
+  };
+  // 把 x 约化到 (−π, π]
+  const wrap=x=>{let r=((x+PI)%(2*PI)+2*PI)%(2*PI)-PI;return r===-PI?PI:r};
+  // 延拓后的 2π 周期函数：full 直接周期化；sine 奇延拓；cos 偶延拓
+  function ext(f,type,x){const r=wrap(x);if(type==='full')return f(r);if(type==='sine')return r>0?f(r):(r<0?-f(-r):0);return f(Math.abs(r))}
+  // 系数（约定 S = a₀/2 + Σ aₙ cos nx + bₙ sin nx）：中点公式 + 三角递推，再用 M 与 M/2 两套网格做 Richardson 外推（误差 O(h⁴)）
+  function raw(f,type,N,M){const a=new Float64Array(N+1),b=new Float64Array(N+1);const lo=type==='full'?-PI:0,len=type==='full'?2*PI:PI,h=len/M,w=(type==='full'?1:2)/PI;
+    for(let m=0;m<M;m++){const x=lo+(m+.5)*h,v=f(x)*h*w;const c1=Math.cos(x),s1=Math.sin(x);let cn=1,sn=0;a[0]+=v;for(let n=1;n<=N;n++){const c=cn*c1-sn*s1;sn=sn*c1+cn*s1;cn=c;if(type!=='sine')a[n]+=v*cn;if(type!=='cos')b[n]+=v*sn}}
+    if(type==='sine')a[0]=0;return{a,b}}
+  function coeffs(f,type,N,M=8192){const A=raw(f,type,N,M),B=raw(f,type,N,M/2);for(let n=0;n<=N;n++){A.a[n]=(4*A.a[n]-B.a[n])/3;A.b[n]=(4*A.b[n]-B.b[n])/3}return A}
+  // 部分和 S_N 或 Fejér 平均 σ_N（权重 1 − n/(N+1)）
+  function partial(cf,N,x,fejer=false){let s=cf.a[0]/2;const c1=Math.cos(x),s1=Math.sin(x);let cn=1,sn=0;for(let n=1;n<=N;n++){const c=cn*c1-sn*s1;sn=sn*c1+cn*s1;cn=c;const wt=fejer?1-n/(N+1):1;s+=wt*(cf.a[n]*cn+cf.b[n]*sn)}return s}
+  // (1/π)∫_{−π}^{π} |延拓|²：Parseval 左边
+  function normSq(f,type,M=20000){let s=0;const h=2*PI/M;for(let m=0;m<M;m++){const v=ext(f,type,-PI+(m+.5)*h);s+=v*v*h}return s/PI}
+  // Parseval 给出的相对 L² 误差 ‖f − S_N‖/‖f‖
+  function l2err(cf,total,N){let s=cf.a[0]*cf.a[0]/2;for(let n=1;n<=N;n++)s+=cf.a[n]**2+cf.b[n]**2;return Math.sqrt(Math.max(0,total-s)/total)}
+  return{presets,wrap,ext,coeffs,partial,normSq,l2err};
+})();
+</script>
+<script>
+/* ---- 通用绘图工具（本页自带，不依赖其他文件） ---- */
+const C={bg:'#0a0e27',grid:'rgba(120,145,190,.13)',axis:'#5b6f93',tick:'#9fb0cc',text:'#dfe8f7',cyan:'#2dd4bf',pink:'#ec4899',gold:'#fbbf24',violet:'#a78bfa',blue:'#77a6ff',orange:'#fb923c',white:'#edf4ff'};
+function fit(cv){const d=window.devicePixelRatio||1,r=cv.getBoundingClientRect(),w=Math.max(40,r.width),h=Math.max(40,r.height);const W=Math.round(w*d),H=Math.round(h*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w,h}}
+function niceStep(span,n){const raw=span/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3?2:m<7?5:10)*p}
+function fmtTick(v,s){if(Math.abs(v)<s*1e-6)return'0';const dg=Math.max(0,-Math.floor(Math.log10(s)+1e-9));return v.toFixed(Math.min(dg,4))}
+/* frame: 画坐标系，返回坐标变换。opt:{x:[a,b],y:[c,d],xl,yl,pad,xt,yt,xticks,yticks,logy,logx} */
+function frame(cv,o){const{ctx,w,h}=fit(cv);const p=Object.assign({l:52,r:14,t:14,b:40},o.pad||{});ctx.fillStyle=C.bg;ctx.fillRect(0,0,w,h);const[x0,x1]=o.x,[y0,y1]=o.y;const pw=w-p.l-p.r,ph=h-p.t-p.b;const X=x=>p.l+(x-x0)/(x1-x0)*pw,Y=y=>p.t+(1-(y-y0)/(y1-y0))*ph;const IX=px=>x0+(px-p.l)/pw*(x1-x0),IY=py=>y0+(1-(py-p.t)/ph)*(y1-y0);ctx.font='12px system-ui,"Microsoft YaHei",sans-serif';ctx.lineWidth=1;
+const xt=o.xticks||(()=>{const s=niceStep(x1-x0,o.xn||7),a=[];for(let v=Math.ceil(x0/s)*s;v<=x1+1e-9;v+=s)a.push([v,o.xfmt?o.xfmt(v):fmtTick(v,s)]);return a})();const yt=o.yticks||(()=>{const s=niceStep(y1-y0,o.yn||5),a=[];for(let v=Math.ceil(y0/s)*s;v<=y1+1e-9;v+=s)a.push([v,o.yfmt?o.yfmt(v):fmtTick(v,s)]);return a})();
+ctx.strokeStyle=C.grid;ctx.fillStyle=C.tick;ctx.textAlign='center';ctx.textBaseline='top';for(const[v,l]of xt){const px=X(v);ctx.beginPath();ctx.moveTo(px,p.t);ctx.lineTo(px,p.t+ph);ctx.stroke();ctx.fillText(l,px,p.t+ph+5)}ctx.textAlign='right';ctx.textBaseline='middle';for(const[v,l]of yt){const py=Y(v);ctx.beginPath();ctx.moveTo(p.l,py);ctx.lineTo(p.l+pw,py);ctx.stroke();ctx.fillText(l,p.l-6,py)}
+ctx.strokeStyle=C.axis;ctx.strokeRect(p.l+.5,p.t+.5,pw-1,ph-1);if(o.zeroY!==false&&y0<0&&y1>0){ctx.beginPath();ctx.moveTo(p.l,Y(0));ctx.lineTo(p.l+pw,Y(0));ctx.stroke()}
+ctx.fillStyle=C.text;ctx.font='12.5px system-ui,"Microsoft YaHei",sans-serif';if(o.xl){ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(o.xl,p.l+pw-4,p.t+ph-4)}if(o.yl){ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(o.yl,p.l+6,p.t+5)}
+return{ctx,w,h,X,Y,IX,IY,p,pw,ph,clip(){ctx.save();ctx.beginPath();ctx.rect(p.l,p.t,pw,ph);ctx.clip()},unclip(){ctx.restore()}}}
+function polyline(f,xs,ys,color,width=2,dash=null,alpha=1){const c=f.ctx;c.save();c.globalAlpha=alpha;c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';if(dash)c.setLineDash(dash);c.beginPath();let pen=false;for(let i=0;i<xs.length;i++){const y=ys[i];if(!isFinite(y)){pen=false;continue}const px=f.X(xs[i]),py=f.Y(y);if(!pen){c.moveTo(px,py);pen=true}else c.lineTo(px,py)}c.stroke();c.restore()}
+function fillUnder(f,xs,ys,color,alpha=.25,base=0){const c=f.ctx;c.save();c.globalAlpha=alpha;c.fillStyle=color;c.beginPath();c.moveTo(f.X(xs[0]),f.Y(base));for(let i=0;i<xs.length;i++)c.lineTo(f.X(xs[i]),f.Y(ys[i]));c.lineTo(f.X(xs[xs.length-1]),f.Y(base));c.closePath();c.fill();c.restore()}
+function label(f,txt,x,y,color,align='left',base='bottom'){const c=f.ctx;c.save();c.font='12.5px system-ui,"Microsoft YaHei",sans-serif';c.fillStyle=color;c.textAlign=align;c.textBaseline=base;c.fillText(txt,x,y);c.restore()}
+/* 发散色标：负→蓝，零→深色，正→金橙 */
+function divColor(v){const t=Math.max(-1,Math.min(1,v)),a=Math.pow(Math.abs(t),.8);const z=[16,24,48],pos=t>=0?[251,170,60]:[90,150,255];return[z[0]+(pos[0]-z[0])*a,z[1]+(pos[1]-z[1])*a,z[2]+(pos[2]-z[2])*a]}
+/* 在 frame 的绘图区画热图：vals 为 ny 行 nx 列（第 0 行是 y 最小处） */
+function heatmap(f,vals,nx,ny,scale,cmap=divColor){const off=document.createElement('canvas');off.width=nx;off.height=ny;const oc=off.getContext('2d'),img=oc.createImageData(nx,ny);for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const c=cmap(vals[j*nx+i]/scale),k=((ny-1-j)*nx+i)*4;img.data[k]=c[0];img.data[k+1]=c[1];img.data[k+2]=c[2];img.data[k+3]=255}oc.putImageData(img,0,0);const c=f.ctx;c.save();c.imageSmoothingEnabled=true;c.drawImage(off,f.p.l,f.p.t,f.pw,f.ph);c.restore()}
+function linspace(a,b,n){const r=new Float64Array(n);for(let i=0;i<n;i++)r[i]=a+(b-a)*i/(n-1);return r}
+const fmt=(v,d=3)=>{if(!isFinite(v))return'—';const a=Math.abs(v);if(a!==0&&(a<1e-3||a>=1e5))return v.toExponential(2).replace('e','×10^').replace(/\^\+?(-?)0*(\d+)/,(m,s,n)=>'^'+s+n);return v.toFixed(d)};
+function sup(s){return s.replace(/\^(-?\d+)/g,(m,n)=>[...n].map(ch=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(ch)]||'⁻').join(''))}
+const fmtS=(v,d=3)=>sup(fmt(v,d));
+function onDrag(cv,cb){let down=false;const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);cb(...pos(e),'down')});cv.addEventListener('pointermove',e=>{if(down)cb(...pos(e),'move')});const up=e=>{if(down){down=false;cb(...pos(e),'up')}};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
+
+const $=id=>document.getElementById(id);const FC=FourierCore;const PI=Math.PI;const NMAX=400;
+const S={drawn:new Float64Array(401),cf:null,f:null,total:1,jump:null,playing:false,harm:false};
+for(let i=0;i<=400;i++){const x=-PI+2*PI*i/400;S.drawn[i]=x<0?-0.5:(x<1.6?1.2:0.3)}
+function drawnF(x){const p=(Math.max(-PI,Math.min(PI,x))+PI)/(2*PI)*400,i=Math.min(399,Math.floor(p)),q=p-i;return S.drawn[i]*(1-q)+S.drawn[i+1]*q}
+const piTicks=(a,b)=>{const r=[];for(let k=Math.ceil(a/PI*2);k<=Math.floor(b/PI*2);k++){const v=k*PI/2;const l=k===0?'0':(k%2===0?(k/2===1?'π':k/2===-1?'−π':(k/2)+'π'):(k===1?'π/2':k===-1?'−π/2':k+'π/2'));r.push([v,l.replace('-','−')])}return r};
+function opts(){return{pre:$('f-pre').value,type:$('f-type').value,N:+$('f-N').value,fej:$('f-sum').value==='fejer'}}
+function recompute(){const o=opts();S.f=o.pre==='draw'?drawnF:FC.presets[o.pre];S.cf=FC.coeffs(S.f,o.type,NMAX,o.pre==='draw'?4096:8192);S.total=FC.normSq(S.f,o.type);
+  // 找延拓在一个周期内的最大跳跃
+  const M=4000,vals=new Float64Array(M);let vmax=-1e9,vmin=1e9;for(let m=0;m<M;m++){const v=FC.ext(S.f,o.type,-PI+2*PI*(m+.5)/M);vals[m]=v;vmax=Math.max(vmax,v);vmin=Math.min(vmin,v)}
+  const range=Math.max(1e-9,vmax-vmin),cands=[];let best=0;for(let m=0;m<M;m++){const d=Math.abs(vals[(m+1)%M]-vals[m]);best=Math.max(best,d);cands.push([d,-PI+2*PI*(m+1)/M])}
+  const mid=o.type==='full'?0:PI/2;let pick=null;for(const[d,x]of cands)if(d>0.95*best&&(!pick||Math.abs(x-mid)<Math.abs(pick[1]-mid)))pick=[d,x];
+  S.jump=best>0.04*range+1e-6?{size:pick[0],x:pick[1]}:null;S.vmax=vmax;S.vmin=vmin;
+  // 拟合斜率
+  const xs=[],ys=[];for(let n=20;n<=200;n++){const A=Math.hypot(S.cf.a[n],S.cf.b[n]);if(A>1e-13*Math.max(1,range)){xs.push(Math.log10(n));ys.push(Math.log10(A))}}
+  if(xs.length>5){const mx=xs.reduce((s,v)=>s+v)/xs.length,my=ys.reduce((s,v)=>s+v)/ys.length;let sxy=0,sxx=0;for(let i=0;i<xs.length;i++){sxy+=(xs[i]-mx)*(ys[i]-my);sxx+=(xs[i]-mx)**2}S.slope=sxy/sxx}else S.slope=-Infinity;
+  draw()}
+function draw(){const o=opts(),N=o.N;$('f-No').textContent=N;const cf=S.cf;const SN=x=>FC.partial(cf,N,x,o.fej),E=x=>FC.ext(S.f,o.type,x);
+  const pad=(S.vmax-S.vmin)*0.22+0.1,yr=[S.vmin-pad,S.vmax+pad];const lo=o.type==='full'?-PI:0;
+  // 主图
+  const xs=linspace(-3*PI,3*PI,1500);const f=frame($('f-main'),{x:[-3*PI,3*PI],y:yr,xticks:piTicks(-3*PI,3*PI),xl:'x'});const ctx=f.ctx;ctx.fillStyle='#ffffff10';ctx.fillRect(f.X(lo),f.p.t,f.X(PI)-f.X(lo),f.ph);f.clip();
+  // 延拓：在跳跃处断开
+  const ev=Array.from(xs,E);for(let i=1;i<ev.length;i++)if(Math.abs(ev[i]-ev[i-1])>0.3*(S.vmax-S.vmin))ev[i-1]=NaN;polyline(f,xs,ev,'#cbd5e1',2,null,.6);
+  if(S.harm&&N>0){const cols=[C.violet,C.pink,C.cyan];for(let q=0;q<3&&N-q>=1;q++){const n=N-q;polyline(f,xs,Array.from(xs,x=>cf.a[n]*Math.cos(n*x)+cf.b[n]*Math.sin(n*x)),cols[q],1.3,null,.85)}}
+  const sv=Array.from(xs,SN);polyline(f,xs,sv,C.gold,2.4);
+  if(S.jump){for(let k=-3;k<=3;k++){const xj=S.jump.x+2*PI*k;if(xj<-3*PI-0.01||xj>3*PI+0.01)continue;const m=(E(xj-1e-6)+E(xj+1e-6))/2;ctx.fillStyle=C.cyan;ctx.beginPath();ctx.arc(f.X(xj),f.Y(m),4,0,7);ctx.fill()}}f.unclip();label(f,o.type==='full'?'基本区间 (−π, π)':'基本区间 (0, π)',f.X((lo+PI)/2),f.p.t+6,'#fbbf24cc','center','top');
+  // 放大图
+  let gibbs=null;if(S.jump){const xj=S.jump.x,w=Math.max(0.15,Math.min(1.2,12/(N+1)));const zx=linspace(xj-w,xj+w,700);const l=E(xj-1e-6),r=E(xj+1e-6),J=S.jump.size;const ylo=Math.min(l,r)-0.2*J,yhi=Math.max(l,r)+0.2*J;
+    const z=frame($('f-zoom'),{x:[xj-w,xj+w],y:[ylo,yhi],xl:'x'});z.clip();const zf=Array.from(zx,E);for(let i=1;i<zf.length;i++)if(Math.abs(zf[i]-zf[i-1])>0.3*J)zf[i-1]=NaN;polyline(z,zx,zf,'#cbd5e1',2,null,.6);
+    const hiV=Math.max(l,r)+0.0895*J,loV=Math.min(l,r)-0.0895*J;for(const v of[hiV,loV]){z.ctx.save();z.ctx.setLineDash([6,5]);z.ctx.strokeStyle=C.pink;z.ctx.beginPath();z.ctx.moveTo(z.p.l,z.Y(v));z.ctx.lineTo(z.p.l+z.pw,z.Y(v));z.ctx.stroke();z.ctx.restore()}
+    polyline(z,zx,Array.from(zx,SN),C.gold,2.4);z.unclip();label(z,'+8.95%',z.p.l+z.pw-6,z.Y(hiV)-3,C.pink,'right');$('f-zoomlab').textContent=`以跳跃点 x ≈ ${xj.toFixed(3)} 为中心，半宽 ${w.toFixed(2)}`;
+    let smax=-1e9,smin=1e9;for(let m=0;m<=4000;m++){const v=SN(-PI+2*PI*m/4000);smax=Math.max(smax,v);smin=Math.min(smin,v)}gibbs=Math.max(0,smax-S.vmax,S.vmin-smin)/J}
+  else{const z=frame($('f-zoom'),{x:[0,1],y:[0,1]});label(z,'延拓连续，没有跳跃——也就没有 Gibbs 现象',z.p.l+z.pw/2,z.p.t+z.ph/2,'#aebbd4','center','middle');$('f-zoomlab').textContent='当前延拓无跳跃'}
+  // 误差图
+  const bx=linspace(lo,PI,900),err=Array.from(bx,x=>SN(x)-E(x));let sup=0;for(let i=1;i<bx.length-1;i++)sup=Math.max(sup,Math.abs(err[i]));const em=Math.max(1e-6,sup)*1.15;
+  const ef=frame($('f-err'),{x:[lo,PI],y:[-em,em],xticks:piTicks(lo,PI),xl:'x',yfmt:v=>Math.abs(v)<em*1e-6?'0':v.toPrecision(2)});ef.clip();polyline(ef,bx,err,C.orange,1.8);ef.unclip();
+  const l2=FC.l2err(cf,S.total,N);
+  $('f-r-J').textContent=S.jump?fmt(S.jump.size,3):'无跳跃';$('f-r-gibbs').textContent=gibbs===null?'—':(gibbs*100).toFixed(2)+'%';$('f-r-sup').textContent=fmt(sup,4);$('f-r-l2').innerHTML=fmtS(l2);
+  const name={full:'周期延拓',sine:'奇延拓',cos:'偶延拓'}[o.type];let msg=`<b>N = ${N}${o.fej?'，Fejér 平均':''}：</b>`;
+  if(S.jump)msg+=o.fej?`Fejér 平均是 f 的非负加权平均，不会冲出 f 的取值范围，所以超调为 ${(gibbs*100).toFixed(2)}%；代价是跳跃处的过渡比 S<sub>N</sub> 更宽。`:`${name}在 x ≈ ${S.jump.x.toFixed(2)}（及其周期平移处）有高度 ${fmt(S.jump.size,3)} 的跳跃。部分和在跳跃点收敛到两侧平均值（青色圆点），旁边的超调约为跳跃的 ${(gibbs*100).toFixed(2)}%${N>=30?'，已接近理论极限 8.95%，再加项也不会消失，只会变窄':''}。`;
+  else msg+=`${name}是连续函数，部分和一致收敛，最大误差 ${fmt(sup,4)} 随 N 稳定下降。`;
+  if(o.pre==='parab'&&o.type==='sine')msg+=' 试着切换到余弦级数：x² 的偶延拓是连续的，收敛会快得多。';if(o.pre==='square'&&o.type==='cos')msg+=' 方波在 (0,π) 上恒为 1，它的余弦级数只有常数项——一项就精确了。';
+  $('f-status').innerHTML=msg;draw2(l2)}
+function draw2(l2){const o=opts(),N=o.N,cf=S.cf;
+  const g=frame($('f-coef'),{x:[0,Math.log10(NMAX)],y:[-9,1],xl:'log₁₀ n',yl:'log₁₀ |cₙ|',xticks:[[0,'1'],[1,'10'],[2,'100'],[Math.log10(400),'400']]});g.clip();
+  let A1=0;for(let n=1;n<=5;n++)A1=Math.max(A1,Math.hypot(cf.a[n],cf.b[n]));A1=Math.max(A1,1e-3);for(const p of[1,2,3]){polyline(g,[0,3],[Math.log10(A1),Math.log10(A1)-3*p],'#cbd5e1',1.1,[5,5],.5);{const xl=Math.min(2.25,(Math.log10(A1)+8.3)/p);label(g,`1/n${p===1?'':p===2?'²':'³'}`,g.X(xl)-4,g.Y(Math.log10(A1)-p*xl)-4,'#cbd5e1cc','right')}}
+  for(let n=1;n<=NMAX;n++){const A=Math.hypot(cf.a[n],cf.b[n]);if(A<1e-9)continue;g.ctx.fillStyle=n<=N?C.gold:'#fbbf2455';g.ctx.beginPath();g.ctx.arc(g.X(Math.log10(n)),g.Y(Math.log10(A)),n<=N?2.6:1.8,0,7);g.ctx.fill()}
+  if(N>=1){g.ctx.strokeStyle=C.pink;g.ctx.beginPath();g.ctx.moveTo(g.X(Math.log10(N)),g.p.t);g.ctx.lineTo(g.X(Math.log10(N)),g.p.t+g.ph);g.ctx.stroke()}g.unclip();
+  const Ns=[],Es=[];for(let n=1;n<=NMAX;n++){const e=FC.l2err(cf,S.total,n);if(e>1e-7){Ns.push(Math.log10(n));Es.push(Math.log10(e))}}
+  const h=frame($('f-l2'),{x:[0,Math.log10(NMAX)],y:[-7,0.2],xl:'log₁₀ N',yl:'log₁₀ 误差',xticks:[[0,'1'],[1,'10'],[2,'100'],[Math.log10(400),'400']]});h.clip();polyline(h,Ns,Es,C.cyan,2.4);if(N>=1&&l2>1e-7){h.ctx.fillStyle=C.pink;h.ctx.beginPath();h.ctx.arc(h.X(Math.log10(N)),h.Y(Math.log10(l2)),5,0,7);h.ctx.fill()}h.unclip();
+  const sl=S.slope;let cls;if(!isFinite(sl)||sl<-5)cls='极快（指数级）：延拓光滑';else if(sl>-1.5)cls='≈ 1/n：延拓有跳跃';else if(sl>-2.5)cls='≈ 1/n²：连续但有尖角';else cls='≈ 1/n³ 或更快：一阶导数也连续';
+  $('f-r-slope').textContent=isFinite(sl)?sl.toFixed(2):'—（系数已低于舍入误差）';$('f-r-class').textContent=cls;$('f-r-norm').textContent=fmt(S.total,5);$('f-r-frac').textContent=(100*(1-l2*l2)).toFixed(N>=50?5:3)+'%';
+  $('f-status2').innerHTML=`<b>读图：</b>金色点是系数振幅，与灰色参考线比较斜率。当前拟合斜率 ${isFinite(sl)?sl.toFixed(2):'—'}，即${cls}。右图由 Parseval 恒等式算出：相对 L² 误差 = √(尾部系数平方和 / 总能量)。${sl>-1.5?'系数 ~1/n 时 L² 误差约按 N<sup>−1/2</sup> 下降——很慢。':sl>-2.5?'系数 ~1/n² 时 L² 误差约按 N<sup>−3/2</sup> 下降。':'系数衰减很快，L² 误差迅速跌到 10⁻⁷ 以下（右图曲线截止处）。'}`}
+['f-pre','f-type'].forEach(id=>$(id).addEventListener('input',recompute));['f-N','f-sum'].forEach(id=>$(id).addEventListener('input',draw));
+$('f-harm').addEventListener('click',()=>{S.harm=!S.harm;$('f-harm').setAttribute('aria-pressed',S.harm);$('f-harmleg').hidden=!S.harm;draw()});
+$('f-play').addEventListener('click',()=>{S.playing=!S.playing;$('f-play').textContent=S.playing?'❚❚ 暂停':'▶ 逐项增加';if(S.playing&&+$('f-N').value>=60)$('f-N').value=0;if(S.playing)tick()});
+let last=0;function tick(t){if(!S.playing)return;if(!t||t-last>140){last=t||0;const n=+$('f-N').value+1;$('f-N').value=n;draw();if(n>=60){S.playing=false;$('f-play').textContent='▶ 逐项增加';return}}requestAnimationFrame(tick)}
+let ld=null;onDrag($('f-main'),(px,py,ph)=>{if($('f-pre').value!=='draw')return;const pad=(S.vmax-S.vmin)*0.22+0.1;const f=frame($('f-main'),{x:[-3*PI,3*PI],y:[S.vmin-pad,S.vmax+pad]});let x=FC.wrap(f.IX(px));if($('f-type').value!=='full'&&x<0)return;const v=Math.max(-2,Math.min(2,f.IY(py)));const i=Math.round((x+PI)/(2*PI)*400);if(ph==='down'||ld===null)ld=[i,v];const[i0,v0]=ld;if(Math.abs(i-i0)<100){const a=Math.min(i0,i),b=Math.max(i0,i);for(let q=a;q<=b;q++)S.drawn[q]=b===a?v:v0+(v-v0)*(q-i0)/(i-i0)}ld=ph==='up'?null:[i,v];recompute()});
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(draw,120)});
+recompute();
+</script>
+</body>
+</html>
