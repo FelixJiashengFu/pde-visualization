@@ -109,7 +109,7 @@
       <h1 id="page-title">让偏微分方程<br><em>动起来。</em></h1>
       <p class="lead">按方程类型整理交互实验、数学说明和数值验证。每个专题都可独立打开；需要在线依赖的专题会明确标注。</p>
       <div class="stats" aria-label="专题概况">
-        <span class="stat"><strong id="topic-count">5</strong> 个已收录专题</span>
+        <span class="stat"><strong id="topic-count">9</strong> 个已收录专题</span>
         <span class="stat">5 个分类方向</span>
         <span class="stat">单文件 · 可独立打开</span>
       </div>
@@ -128,7 +128,7 @@
     </nav>
 
     <section class="group" id="hyperbolic" aria-labelledby="hyperbolic-title">
-      <div class="group-head"><h3 id="hyperbolic-title">双曲型 · 波动与振动</h3><span class="group-count">2 个专题</span></div>
+      <div class="group-head"><h3 id="hyperbolic-title">双曲型 · 波动与振动</h3><span class="group-count">3 个专题</span></div>
       <p class="group-description">传播、振荡与能量：观察扰动如何在时间和空间中演化。</p>
       <div class="cards">
         <article class="card" data-search="阻尼波动方程 受摩擦阻尼的弦 双曲型 波动 振动 能量 稳定性 唯一性 有限差分 damped wave">
@@ -157,14 +157,41 @@
             </div>
           </div>
         </article>
+        <article class="card" data-search="波动方程 d'Alembert 达朗贝尔 行波 特征线 依赖域 影响域 有限传播速度 反射 镜像 奇延拓 偶延拓 能量守恒 双曲型 wave characteristics">
+          <img src="topics/wave-dalembert/preview.png" alt="x–t 平面热图上的特征线与依赖域三角形，以及 t=0 上的依赖区间" loading="lazy">
+          <div class="card-body">
+            <span class="tag">交互实验 · 数值验证</span>
+            <h4>波动方程：d'Alembert 与特征线</h4>
+            <p class="equation">u = ½[φ(x−ct)+φ(x+ct)] + (1/2c)∫ψ</p>
+            <p>看初始形状一分为二奔向两侧；在 x–t 平面点选一点画出依赖域；有限弦上用镜像解释固定端翻转、自由端不翻转，并实时核对能量守恒。</p>
+            <div class="links">
+              <a href="topics/wave-dalembert/index.html">打开专题 →</a>
+              <a href="topics/wave-dalembert/README.md">说明与源码</a>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
     <section class="group" id="parabolic" aria-labelledby="parabolic-title">
-      <div class="group-head"><h3 id="parabolic-title">抛物型 · 热与扩散</h3><span class="group-count">0 个专题</span></div>
+      <div class="group-head"><h3 id="parabolic-title">抛物型 · 热与扩散</h3><span class="group-count">1 个专题</span></div>
       <p class="group-description">热流、扩散与平滑过程。</p>
-      <div class="cards"></div>
-      <div class="empty-category">专题待加入</div>
+      <div class="cards">
+        <article class="card" data-search="热方程 热传导 扩散 分离变量 模态衰减 热核 高斯 卷积 无穷传播速度 最大值原理 显式差分 FTCS 稳定性 von Neumann 抛物型 heat diffusion">
+          <img src="topics/heat-equation/preview.png" alt="温度剖面与模态振幅谱：高频模态随时间迅速衰减" loading="lazy">
+          <div class="card-body">
+            <span class="tag">交互实验 · 数值验证</span>
+            <h4>热方程：分离变量、热核与差分稳定性</h4>
+            <p class="equation">uₜ = k uₓₓ · e^(−n²π²kt) · S(x,t) · r ≤ ½</p>
+            <p>手绘初温，看各正弦模态按 n² 的速率衰减；在直线上把热核当作加权平均并观察无穷传播速度；拖动 r 跨过 ½，看显式差分怎样炸开。</p>
+            <div class="links">
+              <a href="topics/heat-equation/index.html">打开专题 →</a>
+              <a href="topics/heat-equation/README.md">说明与源码</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="empty-category" hidden>专题待加入</div>
     </section>
 
     <section class="group" id="elliptic" aria-labelledby="elliptic-title">
@@ -221,7 +248,7 @@
     </section>
 
     <section class="group" id="analysis" aria-labelledby="analysis-title">
-      <div class="group-head"><h3 id="analysis-title">分析工具 · 级数与收敛</h3><span class="group-count">1 个专题</span></div>
+      <div class="group-head"><h3 id="analysis-title">分析工具 · 级数与收敛</h3><span class="group-count">2 个专题</span></div>
       <p class="group-description">级数解法背后的收敛性：哪些操作不改变收敛范围。</p>
       <div class="cards">
         <article class="card" data-search="幂级数 收敛半径 收敛圆 比值判别法 逐项积分 逐项求导 复变函数 级数 柯西 阿达马 水墨 power series radius of convergence">
@@ -234,6 +261,19 @@
             <div class="links">
               <a href="topics/power-series-radius/index.html">打开专题 →</a>
               <a href="topics/power-series-radius/README.md">说明与源码</a>
+            </div>
+          </div>
+        </article>
+        <article class="card" data-search="傅里叶级数 Fourier 部分和 Gibbs 吉布斯 超调 Fejér 平均 系数衰减 光滑性 Parseval 正弦级数 余弦级数 奇延拓 偶延拓 分离变量 series">
+          <img src="topics/fourier-series/preview.png" alt="方波的傅里叶部分和在跳跃处的 Gibbs 振荡" loading="lazy">
+          <div class="card-body">
+            <span class="tag">交互实验 · 数值验证</span>
+            <h4>傅里叶级数：部分和与 Gibbs 现象</h4>
+            <p class="equation">S_N = a₀/2 + Σ(aₙcos nx + bₙsin nx) · 超调 → 8.95%</p>
+            <p>逐项加谐波，放大跳跃看 9% 超调不肯消失、Fejér 平均把它抹掉；双对数图读系数斜率，判断延拓有跳跃、尖角还是光滑。</p>
+            <div class="links">
+              <a href="topics/fourier-series/index.html">打开专题 →</a>
+              <a href="topics/fourier-series/README.md">说明与源码</a>
             </div>
           </div>
         </article>
